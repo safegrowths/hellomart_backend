@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zxx">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Duralux || <%= title %></title>
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/vendors/css/vendors.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/theme.min.css">
+</head>
+<body>
+    <% if (showNavigation) { %>
+        <!--! Navigation Menu -->
+        <nav class="nxl-navigation">
+            <div class="navbar-wrapper">
+                <div class="m-header">
+                    <a href="/" class="b-brand">
+                        <img src="/assets/images/logo-full.png" alt="" class="logo logo-lg">
+                        <img src="/assets/images/logo-abbr.png" alt="" class="logo logo-sm">
+                    </a>
+                </div>
+                <div class="navbar-content">
+                    <ul class="nxl-navbar">
+                        <li class="nxl-item nxl-caption">
+                            <label>Navigation</label>
+                        </li>
+                        <li class="nxl-item nxl-hasmenu">
+                            <a href="javascript:void(0);" class="nxl-link">
+                                <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                                <span class="nxl-mtext">Dashboards</span>
+                                <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                            </a>
+                            <ul class="nxl-submenu">
+                                <li class="nxl-item"><a class="nxl-link" href="/dashboard">CRM</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="/analytics">Analytics</a></li>
+                            </ul>
+                        </li>
+                        <li class="nxl-item nxl-hasmenu">
+                            <a href="javascript:void(0);" class="nxl-link">
+                                <span class="nxl-micon"><i class="feather-cast"></i></span>
+                                <span class="nxl-mtext">Reports</span>
+                                <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                            </a>
+                            <ul class="nxl-submenu">
+                                <li class="nxl-item"><a class="nxl-link" href="/sales-report">Sales Report</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="/leads-report">Leads Report</a></li>
+                            </ul>
+                        </li>
+                        <li class="nxl-item nxl-hasmenu">
+                            <a href="javascript:void(0);" class="nxl-link">
+                                <span class="nxl-micon"><i class="feather-send"></i></span>
+                                <span class="nxl-mtext">Applications</span>
+                                <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                            </a>
+                            <ul class="nxl-submenu">
+                                <li class="nxl-item"><a class="nxl-link" href="/apps/chat">Chat</a></li>
+                                <li class="nxl-item"><a class="nxl-link" href="/apps/email">Email</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    <% } %>

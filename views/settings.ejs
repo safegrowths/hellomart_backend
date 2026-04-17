@@ -1,0 +1,377 @@
+<%- include('layout/header', { title: 'Dashboard', showNavigation: true }) %>
+<%- include('layout/sidebar', { currentPage: 'dashboard' }) %>
+
+<!-- MAIN SETTINGS CONTENT -->
+<div class="settings-content-wrapper">
+    <div class="settings-header">
+        <h1>Legal & Settings Center</h1>
+        <p>Manage policies, review terms, and find answers — all in one place.</p>
+    </div>
+
+    <!-- PRIVACY POLICY -->
+    <div class="policy-card" id="privacyCard">
+        <div class="policy-header" onclick="toggleCard('privacyCard')">
+            <div class="policy-title">
+                <i class="fas fa-lock"></i>
+                <h2>Privacy Policy</h2>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="policy-content">
+            <div class="policy-text">
+                <p><strong>Effective Date:</strong> March 21, 2026</p>
+                <p>At PolicyHub, your privacy is our top priority. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.</p>
+                <h3>1. Information We Collect</h3>
+                <p>We collect personal information such as your name, email address, billing details, and usage data. We also automatically collect device information via cookies and similar tracking technologies.</p>
+                <h3>2. How We Use Your Information</h3>
+                <p>We use the data to provide services, improve user experience, process payments, communicate updates, and ensure security compliance.</p>
+                <h3>3. Sharing Your Information</h3>
+                <p>We never sell your personal data. We may share information with trusted third-party partners (payment processors, hosting) under strict confidentiality agreements.</p>
+                <h3>4. Data Security</h3>
+                <p>We implement industry-standard encryption, firewalls, and regular audits to protect your data from unauthorized access.</p>
+                <h3>5. Your Rights</h3>
+                <p>You can request access, correction, or deletion of your personal data by contacting support. You may also opt-out of marketing communications.</p>
+                <div class="last-updated"><i class="far fa-clock"></i> Last updated: March 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TERMS AND CONDITIONS -->
+    <div class="policy-card" id="termsCard">
+        <div class="policy-header" onclick="toggleCard('termsCard')">
+            <div class="policy-title">
+                <i class="fas fa-file-contract"></i>
+                <h2>Terms and Conditions</h2>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="policy-content">
+            <div class="policy-text">
+                <p><strong>Agreement to Terms</strong> — By accessing our website or services, you agree to be bound by these Terms and Conditions. If you do not agree, please discontinue use.</p>
+                <h3>1. User Accounts</h3>
+                <p>You are responsible for maintaining the confidentiality of your account credentials. You must be at least 18 years old to create an account.</p>
+                <h3>2. Prohibited Activities</h3>
+                <p>You may not use our service for illegal purposes, transmit malware, violate intellectual property, or harass other users. Violation may result in immediate termination.</p>
+                <h3>3. Intellectual Property</h3>
+                <p>All content, logos, and software are owned by PolicyHub or its licensors. Unauthorized reproduction is prohibited.</p>
+                <h3>4. Limitation of Liability</h3>
+                <p>We provide services "as is" and are not liable for any indirect damages arising from use or inability to use our platform.</p>
+                <h3>5. Modifications</h3>
+                <p>We reserve the right to modify these terms at any time. Continued use after changes constitutes acceptance.</p>
+                <div class="last-updated"><i class="far fa-calendar-alt"></i> Version 2.3 – March 2026</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ SECTION -->
+    <div class="policy-card" id="faqCard">
+        <div class="policy-header" onclick="toggleCard('faqCard')">
+            <div class="policy-title">
+                <i class="fas fa-question-circle"></i>
+                <h2>Frequently Asked Questions</h2>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="policy-content">
+            <div class="policy-text">
+                <div class="faq-item" id="faq1">
+                    <div class="faq-question" onclick="toggleFaq('faq1', event)">
+                        <span>How do I reset my password?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Go to the login page and click "Forgot Password". Enter your registered email, and we'll send a secure reset link. Follow the instructions to create a new password.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq2">
+                    <div class="faq-question" onclick="toggleFaq('faq2', event)">
+                        <span>What payment methods do you accept?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        We accept major credit cards (Visa, Mastercard, American Express), PayPal, and bank transfers for enterprise plans. All transactions are SSL encrypted.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq3">
+                    <div class="faq-question" onclick="toggleFaq('faq3', event)">
+                        <span>Is my data secure with PolicyHub?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Yes! We use 256-bit encryption, regular backups, and strict internal access controls. We're GDPR and CCPA compliant to protect your privacy.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq4">
+                    <div class="faq-question" onclick="toggleFaq('faq4', event)">
+                        <span>Can I cancel my subscription anytime?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Absolutely. You can cancel directly from your account settings. No hidden fees, and you'll retain access until the end of your current billing cycle.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq5">
+                    <div class="faq-question" onclick="toggleFaq('faq5', event)">
+                        <span>How do I contact support?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Reach out via live chat (available 9am–6pm EST) or email support@policyhub.com. We usually respond within 24 hours.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REFUND POLICY -->
+    <div class="policy-card" id="refundCard">
+        <div class="policy-header" onclick="toggleCard('refundCard')">
+            <div class="policy-title">
+                <i class="fas fa-undo-alt"></i>
+                <h2>Refund Policy</h2>
+            </div>
+            <i class="fas fa-chevron-down toggle-icon"></i>
+        </div>
+        <div class="policy-content">
+            <div class="policy-text">
+                <p>We want you to be completely satisfied with your purchase. Our refund policy is designed to be fair and transparent.</p>
+                <h3>30-Day Money-Back Guarantee</h3>
+                <p>If you are not satisfied within the first 30 days of your initial purchase, contact support for a full refund, no questions asked. Refunds are processed to the original payment method within 5-10 business days.</p>
+                <h3>Subscription Cancellations</h3>
+                <p>For monthly or annual plans, you may cancel anytime. Refunds for unused portions are available only within the first 30 days; after that, no prorated refunds apply, but you can use the service until the next renewal date.</p>
+                <h3>Exceptions</h3>
+                <p>Custom enterprise contracts may have different refund terms as specified in the agreement. Promotional purchases are non-refundable but can be exchanged for account credit.</p>
+                <h3>How to Request a Refund</h3>
+                <p>Email billing@policyhub.com with your order ID and reason. Our team typically responds within 48 hours.</p>
+                <div class="last-updated"><i class="fas fa-receipt"></i> Refund policy updated: Feb 2026</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="legal-note">
+        <i class="fas fa-globe"></i> All policies are legally binding documents. For any questions, contact our legal team.
+    </div>
+</div>
+
+<%- include('layout/footer', { pageScript: 'dashboard-init.min.js' }) %>
+
+<style>
+.settings-content-wrapper {
+    flex: 1;
+    padding: 2rem 2rem 3rem;
+    max-width: calc(100% - 270px);
+    margin-left: auto;
+}
+
+.settings-header {
+    margin-bottom: 2rem;
+}
+
+.settings-header h1 {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+}
+
+.settings-header p {
+    color: #5b6e8c;
+    font-size: 1rem;
+}
+
+.policy-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    border: 1px solid #eef2f6;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.policy-header {
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: #fefefe;
+    transition: background 0.2s;
+}
+
+.policy-header:hover {
+    background: #fafcff;
+}
+
+.policy-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.policy-title i {
+    font-size: 1.5rem;
+    color: #2c5f9a;
+    width: 32px;
+}
+
+.policy-title h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e2a44;
+    margin: 0;
+}
+
+.toggle-icon {
+    color: #8b9ab5;
+    transition: transform 0.25s ease;
+    font-size: 1rem;
+}
+
+.policy-content {
+    padding: 0 1.75rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out, padding 0.25s ease;
+    background: #ffffff;
+}
+
+.policy-card.open .policy-content {
+    max-height: 800px;
+    padding: 0 1.75rem 1.75rem 1.75rem;
+}
+
+.policy-card.open .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.policy-text {
+    color: #334155;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.policy-text h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e3a5f;
+    margin: 1.25rem 0 0.5rem 0;
+}
+
+.policy-text p {
+    margin-bottom: 0.75rem;
+}
+
+.last-updated {
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: #7e8aa2;
+    border-top: 1px solid #edf2f7;
+    padding-top: 1rem;
+}
+
+.faq-item {
+    border-bottom: 1px solid #eff3f8;
+    padding: 0.875rem 0;
+}
+
+.faq-item:last-child {
+    border-bottom: none;
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #1f2c48;
+    cursor: pointer;
+    padding: 0.25rem 0;
+}
+
+.faq-question span {
+    font-size: 0.95rem;
+}
+
+.faq-question i {
+    color: #7e8ba8;
+    transition: transform 0.2s;
+    font-size: 0.85rem;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    color: #4a5b79;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 200px;
+    margin-top: 0.75rem;
+}
+
+.faq-item.active .faq-question i {
+    transform: rotate(180deg);
+}
+
+.legal-note {
+    margin-top: 1.5rem;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #8e9db5;
+    padding: 0.75rem 0;
+}
+
+@media (max-width: 768px) {
+    .settings-content-wrapper {
+        padding: 1.5rem;
+        max-width: 100%;
+    }
+    
+    .policy-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .policy-title h2 {
+        font-size: 1.1rem;
+    }
+    
+    .policy-card.open .policy-content {
+        padding: 0 1.25rem 1.25rem 1.25rem;
+    }
+}
+</style>
+
+<script>
+function toggleCard(cardId) {
+    var card = document.getElementById(cardId);
+    if (card) {
+        card.classList.toggle('open');
+    }
+}
+
+function toggleFaq(faqId, event) {
+    event.stopPropagation();
+    var faqElement = document.getElementById(faqId);
+    if (faqElement) {
+        faqElement.classList.toggle('active');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var faqCard = document.getElementById('faqCard');
+    if (faqCard) {
+        faqCard.classList.add('open');
+    }
+    
+    var faqQuestions = document.querySelectorAll('.faq-question');
+    for (var i = 0; i < faqQuestions.length; i++) {
+        faqQuestions[i].addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+});
+</script>

@@ -1,0 +1,69 @@
+<!--! Navigation Sidebar -->
+<nav class="nxl-navigation">
+    <div class="navbar-wrapper">
+        <div class="m-header">
+            <a href="/" class="b-brand">
+                <img src="/assets/images/logo-full.png" alt="" class="logo logo-lg">
+                <img src="/assets/images/logo-abbr.png" alt="" class="logo logo-sm">
+            </a>
+        </div>
+        <div class="navbar-content">
+            <ul class="nxl-navbar">
+                <li class="nxl-item nxl-caption">
+                    <label>Navigation</label>
+                </li>
+                <li class="nxl-item <%= currentPage === 'dashboard' ? 'active' : '' %>">
+                    <a href="/dashboard" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-airplay"></i></span>
+                        <span class="nxl-mtext">Dashboard</span>
+                    </a>
+                </li>
+                
+                
+                
+                
+                <li class="nxl-item nxl-caption">
+                    <label>Management</label>
+                </li>
+                <li class="nxl-item <%= currentPage === 'users' ? 'active' : '' %>">
+                    <a href="/users" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-users"></i></span>
+                        <span class="nxl-mtext">Users List</span>
+                    </a>
+                </li>
+                <li class="nxl-item <%= currentPage === 'categories' ? 'active' : '' %>">
+                    <a href="/categories" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-grid"></i></span>
+                        <span class="nxl-mtext">Categories List</span>
+                    </a>
+                </li>
+                <li class="nxl-item <%= currentPage === 'subcategories' ? 'active' : '' %>">
+                    <a href="/subcategories" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-layers"></i></span>
+                        <span class="nxl-mtext">Subcategories List</span>
+                    </a>
+                </li>
+                
+                <li class="nxl-item nxl-caption">
+                    <label>Settings</label>
+                </li>
+                <li class="nxl-item <%= currentPage === 'settings' ? 'active' : '' %>">
+                    <a href="/settings" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-settings"></i></span>
+                        <span class="nxl-mtext">Settings</span>
+                    </a>
+                </li>
+                
+                <li class="nxl-item nxl-caption">
+                    <label>Account</label>
+                </li>
+                <li class="nxl-item">
+                    <a href="https://hellomartadmin.greatindianews.com/" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-log-out"></i></span>
+                        <span class="nxl-mtext">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

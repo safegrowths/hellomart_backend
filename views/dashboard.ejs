@@ -1,0 +1,134 @@
+<%- include('layout/header', { title: 'Dashboard', showNavigation: true }) %>
+<%- include('layout/sidebar', { currentPage: 'dashboard' }) %>
+
+<main class="nxl-container">
+    <div class="nxl-content">
+        <!-- page-header -->
+        <div class="page-header">
+            <div class="page-header-left d-flex align-items-center">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Dashboard</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item">Dashboard</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="row">
+                <!-- Box 1: Total Revenue -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-dollar-sign"></i>
+                                        <span>Total Revenue</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3">$<span class="counter">45,658</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+ 23.65%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 2: Total Users -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-users"></i>
+                                        <span>Total Categories</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter">1,254</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-primary text-primary">+ 12.5%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 3: Total Orders -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-shopping-cart"></i>
+                                        <span>Total Orders</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter">8,942</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+ 18.2%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 4: Total Products -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-package"></i>
+                                        <span>Total Products</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter">3,456</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-primary text-primary">+ 5.3%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 5: Pending Orders -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-clock"></i>
+                                        <span>Pending Orders</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter">234</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-warning text-warning">- 3.2%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box 6: Average Order Value -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-trending-up"></i>
+                                        <span>Avg. Order Value</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3">$<span class="counter">85.50</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+ 7.8%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('layout/footer', { pageScript: 'dashboard-init.min.js' }) %>

@@ -3652,13 +3652,13 @@ router.post('/popularproducts', async (req, res) => {
 
 router.get('/top-rated-products', async (req, res) => {
   try {
-
     let { limit, offset } = req.query;
 
     // ✅ Default values
     limit = parseInt(limit) || 20;
     offset = parseInt(offset) || 0;
 
+    // ✅ Safety check
     if (limit > 100) limit = 100;
 
     const sql = `
@@ -3675,7 +3675,7 @@ router.get('/top-rated-products', async (req, res) => {
 
     const [rows] = await db.query(sql, [limit, offset]);
 
-    // ✅ Parse + Calculation
+    // ✅ Parse productattribute + add calculations
     const formattedRows = rows.map(product => {
       let parsedAttributes = [];
 
@@ -3686,6 +3686,7 @@ router.get('/top-rated-products', async (req, res) => {
           if (typeof raw === "string") {
             raw = raw.trim();
 
+            // Fix malformed JSON like ][
             if (raw.includes('][')) {
               raw = raw.replace(/\]\s*\[/g, ',');
             }
@@ -3696,7 +3697,6 @@ router.get('/top-rated-products', async (req, res) => {
           }
 
           if (Array.isArray(parsedAttributes)) {
-
             parsedAttributes = parsedAttributes.map(item => {
               let discount = item.discount_percentage;
 
@@ -3710,24 +3710,20 @@ router.get('/top-rated-products', async (req, res) => {
                 item.discounted_price || product.discounted_price || 0
               );
 
-              const cashback_amount = discountedPrice * 1;
-              const shopping_point = discountedPrice * 0.10;
-              const confirm_booking = discountedPrice * 0.01;
-
               return {
                 ...item,
                 discount_percentage: discount,
-                cashback_amount,
-                shopping_point,
-                confirm_booking
+                cashback_amount: (discountedPrice * 1).toFixed(2),
+                shopping_point: (discountedPrice * 0.10).toFixed(2),
+                confirm_booking: (discountedPrice * 0.01).toFixed(2)
               };
             });
-
           } else {
             parsedAttributes = [];
           }
         }
       } catch (err) {
+        console.log("Product attribute parse error:", err.message);
         parsedAttributes = [];
       }
 

@@ -3525,7 +3525,6 @@ router.post('/popularproducts', async (req, res) => {
     let finalLimit = parseInt(limit) || 20;
     let finalOffset = parseInt(offset) || 0;
 
-    // ✅ Safety
     if (finalLimit > 100) finalLimit = 100;
 
     let sql = `
@@ -3539,7 +3538,6 @@ router.post('/popularproducts', async (req, res) => {
 
     let params = [];
 
-    // ✅ Optional filter
     if (sub_category_id && Number(sub_category_id) !== 0) {
       sql += ` WHERE p.sub_category_id = ?`;
       params.push(sub_category_id);
@@ -3563,7 +3561,7 @@ router.post('/popularproducts', async (req, res) => {
       });
     }
 
-    // ✅ Product Attribute Parse
+    // ✅ Product Attribute Parse + Calculation
     const formattedRows = rows.map(product => {
       let parsedAttributes = [];
 
@@ -3584,9 +3582,39 @@ router.post('/popularproducts', async (req, res) => {
           }
 
           if (Array.isArray(parsedAttributes)) {
+
+            // ✅ Remove duplicates
             parsedAttributes = Array.from(
               new Map(parsedAttributes.map(item => [item.id, item])).values()
             );
+
+            // ✅ Add calculation inside each attribute
+            parsedAttributes = parsedAttributes.map(item => {
+              let discount = item.discount_percentage;
+
+              if (typeof discount === "string") {
+                discount = discount.replace('%', '').trim();
+              }
+
+              discount = Number(discount);
+
+              const discountedPrice = Number(
+                item.discounted_price || product.discounted_price || 0
+              );
+
+              const cashback_amount = discountedPrice * 1;
+              const shopping_point = discountedPrice * 0.10;
+              const confirm_booking = discountedPrice * 0.01;
+
+              return {
+                ...item,
+                discount_percentage: discount,
+                cashback_amount,
+                shopping_point,
+                confirm_booking
+              };
+            });
+
           } else {
             parsedAttributes = [];
           }

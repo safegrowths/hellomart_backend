@@ -3322,9 +3322,7 @@ router.post('/settings', async (req, res) => {
 
 router.get('/products_off', async (req, res) => {
   try {
-
     const sql = `SELECT * FROM products ORDER BY id DESC`;
-
     const [rows] = await db.query(sql);
 
     console.log("TOTAL ROWS:", rows.length);
@@ -3332,19 +3330,18 @@ router.get('/products_off', async (req, res) => {
     const filteredProducts = [];
 
     for (let product of rows) {
-
       let parsedAttributes = [];
 
       try {
         let raw = product.productattribute;
 
-        console.log("RAW ATTRIBUTE:", raw);
-
         if (!raw) continue;
 
+        // ✅ Parse JSON safely
         if (typeof raw === "string") {
           raw = raw.trim();
 
+          // Fix broken JSON like ][
           if (raw.includes('][')) {
             raw = raw.replace(/\]\s*\[/g, ',');
           }
@@ -3353,8 +3350,6 @@ router.get('/products_off', async (req, res) => {
         } else if (Array.isArray(raw)) {
           parsedAttributes = raw;
         }
-
-        console.log("PARSED:", parsedAttributes);
 
         let hasValidDiscount = false;
 
@@ -3367,23 +3362,34 @@ router.get('/products_off', async (req, res) => {
 
           discount = Number(discount);
 
-          console.log("DISCOUNT:", discount);
-
           if (!isNaN(discount) && discount >= 40) {
             hasValidDiscount = true;
             break;
           }
         }
 
+        // ✅ Apply calculation only if valid discount
         if (hasValidDiscount) {
+
+          const discountedPrice = Number(product.discounted_price || 0);
+
+          // ✅ Calculations
+          const cashback_amount = discountedPrice * 1;      // 100%
+          const shopping_point = discountedPrice * 0.10;    // 10%
+          const confirm_booking = discountedPrice * 0.01;   // 1%
+
           filteredProducts.push({
             ...product,
-            productattribute: parsedAttributes
+            productattribute: parsedAttributes,
+            cashback_amount,
+            shopping_point,
+            confirm_booking
           });
         }
 
       } catch (err) {
-        console.log("ERROR:", err.message);
+        console.log("ATTRIBUTE PARSE ERROR:", err.message);
+        continue;
       }
     }
 
@@ -3394,8 +3400,12 @@ router.get('/products_off', async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: error.message });
+    console.error("API ERROR:", error);
+    return res.status(500).json({
+      status: false,
+      message: "Internal Server Error",
+      error: error.message
+    });
   }
 });
 

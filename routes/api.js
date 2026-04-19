@@ -3325,8 +3325,6 @@ router.get('/products_off', async (req, res) => {
     const sql = `SELECT * FROM products ORDER BY id DESC`;
     const [rows] = await db.query(sql);
 
-    console.log("TOTAL ROWS:", rows.length);
-
     const filteredProducts = [];
 
     for (let product of rows) {
@@ -3337,11 +3335,10 @@ router.get('/products_off', async (req, res) => {
 
         if (!raw) continue;
 
-        // ✅ Parse JSON safely
+        // ✅ Parse JSON
         if (typeof raw === "string") {
           raw = raw.trim();
 
-          // Fix broken JSON like ][
           if (raw.includes('][')) {
             raw = raw.replace(/\]\s*\[/g, ',');
           }
@@ -3353,7 +3350,8 @@ router.get('/products_off', async (req, res) => {
 
         let hasValidDiscount = false;
 
-        for (let item of parsedAttributes) {
+        // ✅ Loop each attribute
+        parsedAttributes = parsedAttributes.map(item => {
           let discount = item.discount_percentage;
 
           if (typeof discount === "string") {
@@ -3362,33 +3360,38 @@ router.get('/products_off', async (req, res) => {
 
           discount = Number(discount);
 
+          // 👉 discounted_price attribute level pe hai ya product level?
+          const discountedPrice = Number(
+            item.discounted_price || product.discounted_price || 0
+          );
+
+          // ✅ Calculations (per attribute)
+          const cashback_amount = discountedPrice * 1;
+          const shopping_point = discountedPrice * 0.10;
+          const confirm_booking = discountedPrice * 0.01;
+
           if (!isNaN(discount) && discount >= 40) {
             hasValidDiscount = true;
-            break;
           }
-        }
 
-        // ✅ Apply calculation only if valid discount
-        if (hasValidDiscount) {
-
-          const discountedPrice = Number(product.discounted_price || 0);
-
-          // ✅ Calculations
-          const cashback_amount = discountedPrice * 1;      // 100%
-          const shopping_point = discountedPrice * 0.10;    // 10%
-          const confirm_booking = discountedPrice * 0.01;   // 1%
-
-          filteredProducts.push({
-            ...product,
-            productattribute: parsedAttributes,
+          return {
+            ...item,
             cashback_amount,
             shopping_point,
             confirm_booking
+          };
+        });
+
+        // ✅ Only push if at least one attribute has >=40% discount
+        if (hasValidDiscount) {
+          filteredProducts.push({
+            ...product,
+            productattribute: parsedAttributes
           });
         }
 
       } catch (err) {
-        console.log("ATTRIBUTE PARSE ERROR:", err.message);
+        console.log("ERROR:", err.message);
         continue;
       }
     }
@@ -3400,7 +3403,7 @@ router.get('/products_off', async (req, res) => {
     });
 
   } catch (error) {
-    console.error("API ERROR:", error);
+    console.error(error);
     return res.status(500).json({
       status: false,
       message: "Internal Server Error",

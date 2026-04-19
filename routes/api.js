@@ -3659,7 +3659,6 @@ router.get('/top-rated-products', async (req, res) => {
     limit = parseInt(limit) || 20;
     offset = parseInt(offset) || 0;
 
-    // ✅ Safety check
     if (limit > 100) limit = 100;
 
     const sql = `
@@ -3676,10 +3675,72 @@ router.get('/top-rated-products', async (req, res) => {
 
     const [rows] = await db.query(sql, [limit, offset]);
 
+    // ✅ Parse + Calculation
+    const formattedRows = rows.map(product => {
+      let parsedAttributes = [];
+
+      try {
+        if (product.productattribute) {
+          let raw = product.productattribute;
+
+          if (typeof raw === "string") {
+            raw = raw.trim();
+
+            if (raw.includes('][')) {
+              raw = raw.replace(/\]\s*\[/g, ',');
+            }
+
+            parsedAttributes = JSON.parse(raw);
+          } else if (Array.isArray(raw)) {
+            parsedAttributes = raw;
+          }
+
+          if (Array.isArray(parsedAttributes)) {
+
+            parsedAttributes = parsedAttributes.map(item => {
+              let discount = item.discount_percentage;
+
+              if (typeof discount === "string") {
+                discount = discount.replace('%', '').trim();
+              }
+
+              discount = Number(discount);
+
+              const discountedPrice = Number(
+                item.discounted_price || product.discounted_price || 0
+              );
+
+              const cashback_amount = discountedPrice * 1;
+              const shopping_point = discountedPrice * 0.10;
+              const confirm_booking = discountedPrice * 0.01;
+
+              return {
+                ...item,
+                discount_percentage: discount,
+                cashback_amount,
+                shopping_point,
+                confirm_booking
+              };
+            });
+
+          } else {
+            parsedAttributes = [];
+          }
+        }
+      } catch (err) {
+        parsedAttributes = [];
+      }
+
+      return {
+        ...product,
+        productattribute: parsedAttributes
+      };
+    });
+
     return res.status(200).json({
       status: true,
       msg: "Top rated products fetched successfully",
-      data: rows,
+      data: formattedRows,
       pagination: {
         limit,
         offset

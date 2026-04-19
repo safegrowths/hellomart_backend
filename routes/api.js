@@ -3376,9 +3376,9 @@ router.get('/products_off', async (req, res) => {
 
           return {
             ...item,
-            cashback_amount,
-            shopping_point,
-            confirm_booking
+            cashback_amount:cashback_amount.toFixed(2),
+            shopping_point:shopping_point.toFixed(2),
+            confirm_booking:confirm_booking.toFixed(2)
           };
         });
 
@@ -3432,7 +3432,6 @@ router.get('/products_off_50', async (req, res) => {
 
     const [rows] = await db.query(sql, [type]);
 
-    // ✅ Filter only 50% to 100% discount वाले products
     const filteredProducts = rows.map(product => {
       let parsedAttributes = [];
 
@@ -3443,7 +3442,6 @@ router.get('/products_off_50', async (req, res) => {
           if (typeof raw === "string") {
             raw = raw.trim();
 
-            // Fix broken JSON like ][
             if (raw.includes('][')) {
               raw = raw.replace(/\]\s*\[/g, ',');
             }
@@ -3453,18 +3451,42 @@ router.get('/products_off_50', async (req, res) => {
             parsedAttributes = raw;
           }
 
-          // ✅ Filter 50% to 100%
-          parsedAttributes = parsedAttributes.filter(item => {
-            const discount = Number(item.discount_percentage);
-            return discount >= 50 && discount <= 100;
-          });
+          // ✅ Filter + Calculation together
+          parsedAttributes = parsedAttributes
+            .map(item => {
+              let discount = item.discount_percentage;
+
+              if (typeof discount === "string") {
+                discount = discount.replace('%', '').trim();
+              }
+
+              discount = Number(discount);
+
+              // 👉 discounted_price attribute ya product se lo
+              const discountedPrice = Number(
+                item.discounted_price || product.discounted_price || 0
+              );
+
+              // ✅ Calculations
+              const cashback_amount = discountedPrice * 1;
+              const shopping_point = discountedPrice * 0.10;
+              const confirm_booking = discountedPrice * 0.01;
+
+              return {
+                ...item,
+                discount_percentage: discount,
+                cashback_amount,
+                shopping_point,
+                confirm_booking
+              };
+            })
+            .filter(item => item.discount_percentage >= 50 && item.discount_percentage <= 100);
 
         }
       } catch (err) {
         parsedAttributes = [];
       }
 
-      // ✅ Return only valid products
       if (parsedAttributes.length > 0) {
         return {
           ...product,
@@ -3473,6 +3495,7 @@ router.get('/products_off_50', async (req, res) => {
       }
 
       return null;
+
     }).filter(p => p !== null);
 
     return res.status(200).json({

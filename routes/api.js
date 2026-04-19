@@ -2999,6 +2999,7 @@ router.get('/favorite-products', verifyToken, async (req, res) => {
         data: []
       });
     }
+
     const formattedRows = rows.map(product => {
       let parsedAttributes = [];
 
@@ -3009,6 +3010,7 @@ router.get('/favorite-products', verifyToken, async (req, res) => {
           if (typeof raw === "string") {
             raw = raw.trim();
 
+            // ✅ Fix broken JSON
             if (raw.includes('][')) {
               raw = raw.replace(/\]\s*\[/g, ',');
             }
@@ -3019,14 +3021,41 @@ router.get('/favorite-products', verifyToken, async (req, res) => {
           }
 
           if (Array.isArray(parsedAttributes)) {
+
+            // ✅ Remove duplicate attributes
             parsedAttributes = Array.from(
               new Map(parsedAttributes.map(item => [item.id, item])).values()
             );
+
+            // ✅ Add calculation inside each attribute
+            parsedAttributes = parsedAttributes.map(item => {
+              let discount = item.discount_percentage;
+
+              if (typeof discount === "string") {
+                discount = discount.replace('%', '').trim();
+              }
+
+              discount = Number(discount);
+
+              const discountedPrice = Number(
+                item.discounted_price || product.discounted_price || 0
+              );
+
+              return {
+                ...item,
+                discount_percentage: discount,
+                cashback_amount: (discountedPrice * 1).toFixed(2),
+                shopping_point: (discountedPrice * 0.10).toFixed(2),
+                confirm_booking: (discountedPrice * 0.01).toFixed(2)
+              };
+            });
+
           } else {
             parsedAttributes = [];
           }
         }
       } catch (err) {
+        console.log("ATTRIBUTE ERROR:", err.message);
         parsedAttributes = [];
       }
 

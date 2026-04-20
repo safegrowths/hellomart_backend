@@ -53,7 +53,7 @@ exports.getProductAttributes = async (req, res) => {
     } catch (error) {
         console.error('Error in getProductAttributes:', error);
         // Generic error message – do not leak internal details
-        res.status(500).send('Unable to load product attributes. Please try again later.');
+        res.status(500).send(`Unable to load product attributes. Please try again later. '${error}'`);
     }
 };
 

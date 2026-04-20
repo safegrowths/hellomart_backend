@@ -3349,6 +3349,131 @@ router.post('/settings', async (req, res) => {
     }
 });
 
+router.post('/products', async (req, res) => {
+    try {
+        const { sub_category_id } = req.body;
+
+        if (sub_category_id === undefined || sub_category_id === null) {
+            return res.status(400).json({
+                status: 400,
+                msg: "sub_category_id is required"
+            });
+        }
+
+        let sql = `
+            SELECT 
+                id, sub_category_id, category_id, vendor_name, vendor_id, image,
+                product_name, total_price, discounted_price, discount_percentage,
+                sizeChart, Details, rating, stock, weight, Manufacture_date,
+                expiry_date, grocery_type, type, rating_feedback, short_description,
+                made_in, hsn_code, tax_type, total_allowed_quantity,
+                minimum_order_quantity, warranty_periods, guaranty_periods, brands,
+                pickup_location, product_returnable, product_cod_allowed,
+                product_cancelable, underSubCategory, status, delivery_time,
+                user_id, cart_id, cart_quantity, product_status, unit,
+                created_at, updated_at, nutrientdesc, foodtype, productattribute
+            FROM products
+        `;
+
+        let params = [];
+
+        if (Number(sub_category_id) !== 0) {
+            sql += ` WHERE sub_category_id = ?`;
+            params.push(sub_category_id);
+        }
+
+        sql += ` ORDER BY id DESC`;
+
+        const [rows] = await db.query(sql, params);
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                data: []
+            });
+        }
+
+        const formattedRows = rows.map(product => {
+            let parsedAttributes = [];
+
+            try {
+                if (product.productattribute) {
+                    let raw = product.productattribute;
+
+                    if (typeof raw === "string") {
+                        raw = raw.trim();
+
+                        if (raw.includes('][')) {
+                            raw = raw.replace(/\]\s*\[/g, ',');
+                        }
+
+                        parsedAttributes = JSON.parse(raw);
+                    } else if (Array.isArray(raw)) {
+                        parsedAttributes = raw;
+                    }
+
+                    if (Array.isArray(parsedAttributes)) {
+
+                        // ✅ remove duplicates
+                        parsedAttributes = Array.from(
+                            new Map(parsedAttributes.map(item => [item.id, item])).values()
+                        );
+
+                        // ✅ add calculation
+                        parsedAttributes = parsedAttributes.map(item => {
+                            let discount = item.discount_percentage;
+
+                            if (typeof discount === "string") {
+                                discount = discount.replace('%', '').trim();
+                            }
+
+                            discount = Number(discount);
+
+                            const discountedPrice = Number(
+                                item.discounted_price || product.discounted_price || 0
+                            );
+
+                            return {
+                                ...item,
+                                discount_percentage: discount,
+                                cashback_amount: (discountedPrice * 1).toFixed(2),
+                                shopping_point: (discountedPrice * 0.10).toFixed(2),
+                                confirm_booking: (discountedPrice * 0.01).toFixed(2)
+                            };
+                        });
+
+                    } else {
+                        parsedAttributes = [];
+                    }
+                }
+            } catch (err) {
+                console.log("ATTRIBUTE ERROR:", err.message);
+                parsedAttributes = [];
+            }
+
+            return {
+                ...product,
+                productattribute: parsedAttributes
+            };
+        });
+
+        return res.status(200).json({
+            status: 200,
+            msg: "Products fetched successfully",
+            data: formattedRows
+        });
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+
+        return res.status(500).json({
+            status: 500,
+            msg: "Internal Server Error",
+            error: error.message
+        });
+    }
+});
+
+
 router.get('/products_off', async (req, res) => {
   try {
     const sql = `SELECT * FROM products ORDER BY id DESC`;

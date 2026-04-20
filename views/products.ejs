@@ -4,7 +4,7 @@
 <div class="main-content">
   <div class="page-header">
     <h1><i class="fas fa-table"></i> Product Attributes – Master Table View</h1>
-    <p>All product attributes flattened into a single table</p>
+    <p>All product attributes flattened into a single table with pagination</p>
   </div>
 
   <% 
@@ -18,7 +18,6 @@
         }
         if (!Array.isArray(attributes)) attributes = [];
         
-        // If no attributes, still show one row with empty attribute data
         if (attributes.length === 0) {
           flatRows.push({
             product_id: product.id,
@@ -57,7 +56,7 @@
   <% if (flatRows.length) { %>
     <div class="table-container">
       <div class="table-responsive">
-        <table class="master-table">
+        <table class="master-table" id="attributesTable">
           <thead>
             <tr>
               <th>Product Name</th>
@@ -71,41 +70,178 @@
               <th>Image</th>
             </tr>
           </thead>
-          <tbody>
-            <% flatRows.forEach(row => { %>
-              <tr>
-                <td data-label="Product Name">
-                  <%= row.vendor_name %>
-                  <small class="product-id">(ID: <%= row.product_id %>)</small>
-                </td>
-                <td data-label="Category ID"><%= row.category_id %></td>
-                <td data-label="Attr ID"><%= row.attr_id %></td>
-                <td data-label="Variant Name"><strong><%= row.attr_name %></strong></td>
-                <td data-label="Price (₹)" class="price-cell">
-                  <%= row.price ? '₹' + row.price.toLocaleString('en-IN') : '—' %>
-                </td>
-                <td data-label="Weight">
-                  <%= row.weight %> <%= row.grocery_type %>
-                </td>
-                <td data-label="Disc. Price (₹)" class="price-cell">
-                  <%= row.discounted_price ? '₹' + row.discounted_price.toLocaleString('en-IN') : '—' %>
-                </td>
-                <td data-label="Stock" class="<%= row.stock == 0 ? 'out-of-stock' : 'in-stock' %>">
-                  <%= row.stock %> left
-                </td>
-                <td data-label="Image">
-                  <% if (row.image) { %>
-                    <a href="<%= row.image %>" target="_blank" rel="noopener noreferrer" class="image-link">
-                      <i class="fas fa-external-link-alt"></i> View
-                    </a>
-                  <% } else { %>—<% } %>
-                </td>
-              </tr>
-            <% }) %>
+          <tbody id="tableBody">
+            <!-- All rows will be populated by JavaScript for pagination -->
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-wrapper">
+      <div class="pagination-info">
+        Showing <span id="startRow">0</span> - <span id="endRow">0</span> of <span id="totalRows"><%= flatRows.length %></span> entries
+      </div>
+      <div class="pagination-controls">
+        <button id="prevPageBtn" class="page-btn" disabled>« Previous</button>
+        <div id="pageNumbers" class="page-numbers"></div>
+        <button id="nextPageBtn" class="page-btn" disabled>Next »</button>
+      </div>
+      <div class="per-page-selector">
+        <label>Show</label>
+        <select id="perPageSelect">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="<%= flatRows.length %>">All</option>
+        </select>
+        <label>entries</label>
+      </div>
+    </div>
+
+    <script>
+      // Pass flatRows data to JavaScript
+      const allRows = <%- JSON.stringify(flatRows) %>;
+      let currentPage = 1;
+      let rowsPerPage = 20; // default
+      let totalPages = 1;
+
+      function renderTable() {
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const pageRows = allRows.slice(start, end);
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        if (pageRows.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" class="no-data">No data on this page</td></tr>';
+        } else {
+          pageRows.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td data-label="Product Name">
+                ${escapeHtml(row.vendor_name)}
+                <small class="product-id">(ID: ${row.product_id})</small>
+              </td>
+              <td data-label="Category ID">${escapeHtml(row.category_id)}</td>
+              <td data-label="Attr ID">${escapeHtml(row.attr_id)}</td>
+              <td data-label="Variant Name"><strong>${escapeHtml(row.attr_name)}</strong></td>
+              <td data-label="Price (₹)" class="price-cell">
+                ${row.price ? '₹' + row.price.toLocaleString('en-IN') : '—'}
+              </td>
+              <td data-label="Weight">
+                ${escapeHtml(row.weight)} ${escapeHtml(row.grocery_type)}
+              </td>
+              <td data-label="Disc. Price (₹)" class="price-cell">
+                ${row.discounted_price ? '₹' + row.discounted_price.toLocaleString('en-IN') : '—'}
+              </td>
+              <td data-label="Stock" class="${row.stock == 0 ? 'out-of-stock' : 'in-stock'}">
+                ${row.stock} left
+              </td>
+              <td data-label="Image">
+                ${row.image ? `<a href="${escapeHtml(row.image)}" target="_blank" rel="noopener noreferrer" class="image-link"><i class="fas fa-external-link-alt"></i> View</a>` : '—'}
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        // Update info text
+        const total = allRows.length;
+        const startRow = total === 0 ? 0 : start + 1;
+        const endRow = Math.min(end, total);
+        document.getElementById('startRow').innerText = startRow;
+        document.getElementById('endRow').innerText = endRow;
+        document.getElementById('totalRows').innerText = total;
+
+        // Update pagination buttons
+        totalPages = Math.ceil(total / rowsPerPage);
+        document.getElementById('prevPageBtn').disabled = currentPage === 1;
+        document.getElementById('nextPageBtn').disabled = currentPage === totalPages || total === 0;
+
+        renderPageNumbers();
+      }
+
+      function renderPageNumbers() {
+        const container = document.getElementById('pageNumbers');
+        container.innerHTML = '';
+        if (totalPages <= 7) {
+          for (let i = 1; i <= totalPages; i++) {
+            addPageButton(i);
+          }
+        } else {
+          // Show first, last, current with ellipsis
+          addPageButton(1);
+          if (currentPage > 3) addEllipsis();
+          let start = Math.max(2, currentPage - 1);
+          let end = Math.min(totalPages - 1, currentPage + 1);
+          for (let i = start; i <= end; i++) {
+            addPageButton(i);
+          }
+          if (currentPage < totalPages - 2) addEllipsis();
+          addPageButton(totalPages);
+        }
+      }
+
+      function addPageButton(page) {
+        const btn = document.createElement('button');
+        btn.innerText = page;
+        btn.classList.add('page-num');
+        if (page === currentPage) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+          currentPage = page;
+          renderTable();
+        });
+        document.getElementById('pageNumbers').appendChild(btn);
+      }
+
+      function addEllipsis() {
+        const span = document.createElement('span');
+        span.innerText = '...';
+        span.classList.add('ellipsis');
+        document.getElementById('pageNumbers').appendChild(span);
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+          if (m === '&') return '&amp;';
+          if (m === '<') return '&lt;';
+          if (m === '>') return '&gt;';
+          return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+          return c;
+        });
+      }
+
+      // Event listeners
+      document.getElementById('perPageSelect').addEventListener('change', (e) => {
+        rowsPerPage = parseInt(e.target.value);
+        if (rowsPerPage === allRows.length) {
+          rowsPerPage = allRows.length;
+        }
+        currentPage = 1;
+        renderTable();
+      });
+
+      document.getElementById('prevPageBtn').addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+        }
+      });
+
+      document.getElementById('nextPageBtn').addEventListener('click', () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+        }
+      });
+
+      // Initial render
+      renderTable();
+    </script>
   <% } else { %>
     <div class="alert alert-info">
       <i class="fas fa-info-circle"></i> No products with attributes found in database.
@@ -225,7 +361,84 @@
     color: #0369a1;
     font-weight: 500;
   }
-  /* Mobile responsive: labels for each cell */
+
+  /* Pagination styles */
+  .pagination-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 16px;
+    background: white;
+    padding: 16px 20px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+  }
+  .pagination-info {
+    font-size: 0.85rem;
+    color: #475569;
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .page-btn, .page-num {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #1e293b;
+  }
+  .page-btn:hover:not(:disabled), .page-num:hover:not(.active) {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+  }
+  .page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .page-num.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: white;
+  }
+  .page-numbers {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .ellipsis {
+    padding: 0 4px;
+    color: #64748b;
+  }
+  .per-page-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #475569;
+  }
+  .per-page-selector select {
+    padding: 5px 8px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-size: 0.8rem;
+  }
+  .no-data {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+  }
+
+  /* Mobile responsive */
   @media (max-width: 768px) {
     .main-content {
       padding: 16px;
@@ -264,6 +477,16 @@
     }
     .in-stock, .out-of-stock {
       white-space: normal;
+    }
+    .pagination-wrapper {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .pagination-controls {
+      justify-content: center;
+    }
+    .per-page-selector {
+      justify-content: center;
     }
   }
   @media (max-width: 480px) {

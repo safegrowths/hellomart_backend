@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const db = require('../db');
 
 exports.homePage = (req, res) => {
     res.render('login');

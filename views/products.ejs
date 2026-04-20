@@ -9,15 +9,27 @@
 
   <% if (products && products.length) { %>
     <div class="attributes-container">
-      <% products.forEach(product => { %>
+      <% products.forEach(product => { 
+        // Safely parse attributes if it's a JSON string
+        let attributes = product.attributes;
+        if (typeof attributes === 'string') {
+          try {
+            attributes = JSON.parse(attributes);
+          } catch(e) {
+            attributes = [];
+          }
+        }
+        // Ensure attributes is an array
+        if (!Array.isArray(attributes)) attributes = [];
+      %>
         <div class="product-card">
           <div class="product-header">
             <h3><%= product.vendor_name || 'Unnamed Product' %> (ID: <%= product.id %>)</h3>
             <span class="badge">Category ID: <%= product.category_id || '—' %></span>
           </div>
           
-          <% if (product.attributes && product.attributes.length) { %>
-            <div class="table-responsive">
+          <% if (attributes.length) { %>
+            <div class="table-wrapper">
               <table class="attributes-table">
                 <thead>
                   <tr>
@@ -31,24 +43,36 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <% product.attributes.forEach(attr => { %>
-                    <tr>
-                      <td><%= attr.id || '—' %></td>
-                      <td><%= attr.name || 'Default' %></td>
-                      <td><%= attr.price ? '₹' + parseFloat(attr.price).toLocaleString() : '—' %></td>
-                      <td><%= attr.weight || '—' %> <%= attr.grocery_type || '' %></td>
-                      <td><%= attr.discounted_price ? '₹' + parseFloat(attr.discounted_price).toLocaleString() : '—' %></td>
-                      <td class="<%= attr.stock == 0 ? 'out-of-stock' : 'in-stock' %>">
-                        <%= attr.stock || 0 %> left
-                      </td>
-                      <td>
-                        <% if (attr.image) { %>
-                          <a href="<%= attr.image %>" target="_blank" class="image-link">
-                            <i class="fas fa-image"></i> View
-                          </a>
-                        <% } else { %>—<% } %>
-                      </td>
-                    </tr>
+                  <% attributes.forEach(attr => { 
+                    // Safely format price values
+                    const price = attr.price && !isNaN(parseFloat(attr.price)) ? parseFloat(attr.price) : null;
+                    const discountedPrice = attr.discounted_price && !isNaN(parseFloat(attr.discounted_price)) ? parseFloat(attr.discounted_price) : null;
+                    const stock = (attr.stock !== undefined && attr.stock !== null) ? parseInt(attr.stock) : 0;
+                  %>
+                  <tr>
+                    <td data-label="Attribute ID"><%= attr.id || '—' %></td>
+                    <td data-label="Variant Name"><%= attr.name || 'Default' %></td>
+                    <td data-label="Price (₹)" class="price-cell">
+                      <%= price ? '₹' + price.toLocaleString('en-IN') : '—' %>
+                    </td>
+                    <td data-label="Weight">
+                      <%= attr.weight || '—' %> 
+                      <%= attr.grocery_type ? attr.grocery_type : '' %>
+                    </td>
+                    <td data-label="Discounted Price" class="price-cell">
+                      <%= discountedPrice ? '₹' + discountedPrice.toLocaleString('en-IN') : '—' %>
+                    </td>
+                    <td data-label="Stock" class="<%= stock == 0 ? 'out-of-stock' : 'in-stock' %>">
+                      <%= stock %> left
+                    </td>
+                    <td data-label="Image">
+                      <% if (attr.image && attr.image.trim()) { %>
+                        <a href="<%= attr.image %>" target="_blank" class="image-link" rel="noopener noreferrer">
+                          <i class="fas fa-image"></i> View
+                        </a>
+                      <% } else { %>—<% } %>
+                    </td>
+                  </tr>
                   <% }) %>
                 </tbody>
               </table>
@@ -80,6 +104,10 @@
     margin-bottom: 32px;
     padding: 20px;
     border: 1px solid #eef2ff;
+    transition: box-shadow 0.2s ease;
+  }
+  .product-card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   }
   .product-header {
     display: flex;
@@ -88,6 +116,14 @@
     border-bottom: 2px solid #eef2ff;
     padding-bottom: 12px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .product-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
   }
   .badge {
     background: #eef2ff;
@@ -95,20 +131,40 @@
     border-radius: 30px;
     font-size: 0.75rem;
     font-weight: 500;
+    color: #4f46e5;
+  }
+  /* Table wrapper for horizontal scroll on small screens */
+  .table-wrapper {
+    overflow-x: auto;
+    border-radius: 16px;
+    margin-top: 8px;
   }
   .attributes-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.85rem;
+    min-width: 700px;
   }
   .attributes-table th {
     text-align: left;
     background: #f1f5f9;
-    padding: 12px 10px;
+    padding: 14px 12px;
+    font-weight: 600;
+    color: #334155;
+    border-bottom: 1px solid #e2e8f0;
   }
   .attributes-table td {
-    padding: 10px;
-    border-bottom: 1px solid #eef2ff;
+    padding: 12px;
+    border-bottom: 1px solid #f0f2f5;
+    vertical-align: middle;
+    color: #1e293b;
+  }
+  .attributes-table tbody tr:hover {
+    background-color: #fafbff;
+  }
+  .price-cell {
+    font-weight: 500;
+    color: #0f3b2c;
   }
   .in-stock {
     color: #10b981;
@@ -116,31 +172,70 @@
   }
   .out-of-stock {
     color: #ef4444;
+    font-weight: 600;
   }
   .image-link {
     color: #4f46e5;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    transition: background 0.2s;
+  }
+  .image-link:hover {
+    background: #e0e7ff;
+    text-decoration: none;
   }
   .no-attributes {
     background: #fef9e3;
-    padding: 12px;
+    padding: 14px 18px;
     border-radius: 16px;
     color: #b45309;
+    font-size: 0.9rem;
+    border-left: 4px solid #f59e0b;
   }
   .alert-info {
     background: #e0f2fe;
     padding: 20px;
     border-radius: 20px;
     text-align: center;
+    color: #0369a1;
   }
+  /* Responsive: For very small devices, enhance readability with block layout */
   @media (max-width: 768px) {
+    .main-content {
+      padding: 16px;
+    }
+    .product-card {
+      padding: 16px;
+    }
+    .attributes-table th,
+    .attributes-table td {
+      padding: 10px 8px;
+    }
     .attributes-table {
-      font-size: 0.7rem;
+      font-size: 0.75rem;
+      min-width: 650px;
     }
     .product-header {
       flex-direction: column;
-      align-items: start;
-      gap: 10px;
+      align-items: flex-start;
+    }
+    .badge {
+      align-self: flex-start;
+    }
+  }
+  /* Optional: For screens under 480px, keep scroll but ensure readability */
+  @media (max-width: 480px) {
+    .attributes-table {
+      font-size: 0.7rem;
+    }
+    .image-link {
+      padding: 3px 8px;
     }
   }
 </style>

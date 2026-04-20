@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<%- include('layout/header', { title: 'Categories List', showNavigation: true }) %>
+<%- include('layout/sidebar', { currentPage: 'categories-list' }) %><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -791,3 +792,4 @@
 </script>
 </body>
 </html>
+<%- include('layout/footer', { pageScript: 'categories-init.min.js' }) %>

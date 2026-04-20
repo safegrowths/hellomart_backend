@@ -3270,38 +3270,110 @@ async function addtocart(req, userid, product_id,productattribute_id,sub_categor
   }
 }
 
-router.post('/AddCart',verifyToken, async (req, res) => {
+router.post('/AddCart', verifyToken, async (req, res) => {
   try {
-      const userid = req.user.id;
-    const { product_id,quantity,productattribute_id,sub_categorise,type } = req.body;
-    console.log('payload', req.body);
+    const userid = req.user.id;
 
-    let datas = [];
+    const { product_id, quantity, productattribute_id, sub_categorise, coupon_id } = req.body;
 
     if (!product_id || !quantity) {
       return res.status(400).json({
-        msg: "UserId or Product Id or quntity is Required",
+        msg: "Product Id & Quantity required",
         status: 400
       });
     }
 
-    
-    getUserAddress2 = await addtocart(req, userid,product_id,productattribute_id,sub_categorise,quantity);
-    
-    res.status(200).json({
+    // ✅ 1. Product fetch karo
+    const [products] = await db.query(
+      `SELECT discounted_price, productattribute FROM products WHERE id = ?`,
+      [product_id]
+    );
+
+    if (products.length === 0) {
+      return res.status(404).json({
+        msg: "Product not found",
+        status: 404
+      });
+    }
+
+    const product = products[0];
+
+    // ✅ 2. productattribute parse
+    let parsedAttributes = [];
+    let selectedAttribute = null;
+
+    try {
+      let raw = product.productattribute;
+
+      if (typeof raw === "string") {
+        raw = raw.trim();
+        if (raw.includes('][')) {
+          raw = raw.replace(/\]\s*\[/g, ',');
+        }
+        parsedAttributes = JSON.parse(raw);
+      } else if (Array.isArray(raw)) {
+        parsedAttributes = raw;
+      }
+
+      // ✅ selected attribute find
+      selectedAttribute = parsedAttributes.find(
+        item => Number(item.id) === Number(productattribute_id)
+      );
+
+    } catch (err) {
+      console.log("ATTRIBUTE ERROR:", err.message);
+    }
+
+    // ✅ 3. discounted price
+    const discountedPrice = Number(
+      selectedAttribute?.discounted_price || product.discounted_price || 0
+    );
+
+    // ✅ 4. confirm booking (1%)
+    const confirm_booking = (discountedPrice * 0.01).toFixed(2);
+
+    // ✅ 5. Coupon apply
+    let coupon_discount = 0;
+
+    if (coupon_id) {
+      const [couponRows] = await db.query(
+        `SELECT * FROM coupon WHERE id = ? AND status = 1`,
+        [coupon_id]
+      );
+
+      if (couponRows.length > 0) {
+        coupon_discount = Number(couponRows[0].amount || 0);
+      }
+    }
+
+    // ✅ 6. Final amount
+    const final_amount = (discountedPrice - coupon_discount).toFixed(2);
+
+    // ✅ 7. Add to cart
+    await addtocart(req, userid, product_id, productattribute_id, sub_categorise, quantity);
+
+    return res.status(200).json({
+      status: 200,
       msg: "Cart Added Successfully",
-      status: 200
+      data: {
+        product_id,
+        productattribute_id,
+        discountedPrice: discountedPrice.toFixed(2),
+        confirm_booking,
+        coupon_discount: coupon_discount.toFixed(2),
+        final_amount
+      }
     });
 
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+    return res.status(500).json({
       msg: "Internal Server Error",
       error: err.message,
       status: 500
     });
   }
 });
-
 
 router.post('/settings', async (req, res) => {
     try {

@@ -32,7 +32,7 @@ exports.getProductAttributes = async (req, res) => {
       return { ...product, attributes };
     });
 
-    res.render('product-attributes', {
+    res.render('products', {
       title: 'Product Attributes',
       showNavigation: true,
       currentPage: 'products',

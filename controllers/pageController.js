@@ -88,7 +88,7 @@ exports.subcategorisePage = (req, res) => {
         currentPage: 'subcategorise'
     });
 };
-exports.post('/add-category', async (req, res) => {
+exports.addCategory = async (req, res) => {
   try {
     const { title, image, status, type } = req.body;
 
@@ -116,9 +116,9 @@ exports.post('/add-category', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+};
 
-exports.get('/categories', async (req, res) => {
+exports.getCategories= async (req, res) => {
   try {
     const { status, type } = req.query;
 
@@ -147,8 +147,8 @@ exports.get('/categories', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-exports.post('/toggle-category', async (req, res) => {
+};
+exports.toggleCategory = async (req, res) => {
   try {
     const { id } = req.body;
 
@@ -166,8 +166,8 @@ exports.post('/toggle-category', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-exports.post('/delete-category', async (req, res) => {
+};
+exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.body;
 
@@ -181,7 +181,7 @@ exports.post('/delete-category', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+};
 
 exports.settingsPage = (req, res) => {
     res.render('settings', { 

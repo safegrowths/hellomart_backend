@@ -8,7 +8,7 @@ router.get('/about', pageController.aboutPage);
 router.get('/dashboard', pageController.dashboardPage);
 router.get('/users', pageController.usersPage);
 router.get('/users', pageController.usersPage);
-router.get('/categories', pageController.categorisePage);
+router.get('/categoriess', pageController.categorisePage);
 router.get('/subcategories', pageController.subcategorisePage);
 router.get('/settings', pageController.settingsPage);
 router.get('/product-attributes', pageController.getProductAttributes);

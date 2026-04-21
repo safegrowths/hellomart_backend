@@ -91,30 +91,14 @@ exports.subcategorisePage = (req, res) => {
 exports.addCategory = async (req, res) => {
   try {
     const { title, image, status, type } = req.body;
-
     if (!title) {
       return res.json({ status: false, msg: "Title required" });
     }
-
-    const sql = `
-      INSERT INTO categorise (title, image, status, type, created_at)
-      VALUES (?, ?, ?, ?, NOW())
-    `;
-
-    await db.query(sql, [
-      title,
-      image || '',
-      status || 1,
-      type || 1
-    ]);
-
-    res.json({
-      status: true,
-      msg: "Category added successfully"
-    });
-
+    const sql = `INSERT INTO categorise (title, image, status, type, created_at) VALUES (?, ?, ?, ?, NOW())`;
+    await db.query(sql, [title, image || '', status || 1, type || 1]);
+    res.json({ status: true, msg: "Category added successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ status: false, msg: err.message });
   }
 };
 

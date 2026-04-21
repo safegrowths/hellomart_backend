@@ -88,6 +88,100 @@ exports.subcategorisePage = (req, res) => {
         currentPage: 'subcategorise'
     });
 };
+router.post('/add-category', async (req, res) => {
+  try {
+    const { title, image, status, type } = req.body;
+
+    if (!title) {
+      return res.json({ status: false, msg: "Title required" });
+    }
+
+    const sql = `
+      INSERT INTO categorise (title, image, status, type, created_at)
+      VALUES (?, ?, ?, ?, NOW())
+    `;
+
+    await db.query(sql, [
+      title,
+      image || '',
+      status || 1,
+      type || 1
+    ]);
+
+    res.json({
+      status: true,
+      msg: "Category added successfully"
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/categories', async (req, res) => {
+  try {
+    const { status, type } = req.query;
+
+    let sql = `SELECT * FROM categorise WHERE 1`;
+    let params = [];
+
+    if (status !== undefined) {
+      sql += ` AND status = ?`;
+      params.push(status);
+    }
+
+    if (type) {
+      sql += ` AND type = ?`;
+      params.push(type);
+    }
+
+    sql += ` ORDER BY id DESC`;
+
+    const [rows] = await db.query(sql, params);
+
+    res.json({
+      status: true,
+      data: rows
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.post('/toggle-category', async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    await db.query(`
+      UPDATE categorise 
+      SET status = IF(status = 1, 0, 1)
+      WHERE id = ?
+    `, [id]);
+
+    res.json({
+      status: true,
+      msg: "Status updated"
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+router.post('/delete-category', async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    await db.query(`DELETE FROM categorise WHERE id = ?`, [id]);
+
+    res.json({
+      status: true,
+      msg: "Deleted successfully"
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 exports.settingsPage = (req, res) => {
     res.render('settings', { 

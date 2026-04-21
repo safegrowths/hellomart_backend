@@ -12,5 +12,16 @@ router.get('/categories', pageController.categorisePage);
 router.get('/subcategories', pageController.subcategorisePage);
 router.get('/settings', pageController.settingsPage);
 router.get('/product-attributes', pageController.getProductAttributes);
+// ✅ Add Category
+router.post('/add-category', pageController.addCategory);
+
+// ✅ Get Categories (all / filter)
+router.get('/categories', pageController.getCategories);
+
+// ✅ Toggle Status
+router.post('/toggle-category', pageController.toggleCategory);
+
+// ✅ Delete Category
+router.post('/delete-category', pageController.deleteCategory);
 
 module.exports = router;

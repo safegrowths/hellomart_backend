@@ -88,7 +88,7 @@ exports.subcategorisePage = (req, res) => {
         currentPage: 'subcategorise'
     });
 };
-router.post('/add-category', async (req, res) => {
+exports.post('/add-category', async (req, res) => {
   try {
     const { title, image, status, type } = req.body;
 
@@ -118,7 +118,7 @@ router.post('/add-category', async (req, res) => {
   }
 });
 
-router.get('/categories', async (req, res) => {
+exports.get('/categories', async (req, res) => {
   try {
     const { status, type } = req.query;
 
@@ -148,7 +148,7 @@ router.get('/categories', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.post('/toggle-category', async (req, res) => {
+exports.post('/toggle-category', async (req, res) => {
   try {
     const { id } = req.body;
 
@@ -167,7 +167,7 @@ router.post('/toggle-category', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-router.post('/delete-category', async (req, res) => {
+exports.post('/delete-category', async (req, res) => {
   try {
     const { id } = req.body;
 

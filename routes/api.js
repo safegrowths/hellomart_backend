@@ -2725,7 +2725,7 @@ router.post('/addressupdate', verifyToken, async (req, res) => {
       });
     }
 
-    // ✅ Dynamic fields build
+   
     let fields = [];
     let values = [];
 
@@ -3349,8 +3349,25 @@ router.post('/AddCart', verifyToken, async (req, res) => {
     // ✅ 6. Final amount
     const final_amount = (discountedPrice - coupon_discount).toFixed(2);
 
-    // ✅ 7. Add to cart
-    await addtocart(req, userid, product_id, productattribute_id, sub_categorise, quantity);
+    // ✅ 7. Check if already in cart
+    const [existingCart] = await db.query(
+      `SELECT id, quantity FROM cart 
+       WHERE user_id = ? AND product_id = ? AND productattribute_id = ?`,
+      [userid, product_id, productattribute_id]
+    );
+
+    if (existingCart.length > 0) {
+      // 👉 already hai → quantity update karo
+      const newQty = Number(existingCart[0].quantity) + Number(quantity);
+
+      await db.query(
+        `UPDATE cart SET quantity = ? WHERE id = ?`,
+        [newQty, existingCart[0].id]
+      );
+    } else {
+      // 👉 nahi hai → normal insert
+      await addtocart(req, userid, product_id, productattribute_id, sub_categorise, quantity);
+    }
 
     return res.status(200).json({
       status: 200,

@@ -1,6 +1,7 @@
+const multer = require('multer');
 const db = require('../db');
 const {all_banner_list } = require('../models/admin');
-const multer = require('multer');
+
 
 exports.homePage = (req, res) => {
     res.render('login');
@@ -101,41 +102,7 @@ const upload = multer({ storage }).single('image');
 const runQuery = (sql, params) => db.promise().execute(sql, params);
 
 // 1. List categories (GET)
-exports.categoryPage = async (req, res) => {
-    try {
-        const search = req.query.search || "";
-        let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let offset = (page - 1) * limit;
 
-        let whereClause = "";
-        let queryParams = [];
-        if (search) {
-            whereClause = "WHERE title LIKE ?";
-            queryParams.push(`%${search}%`);
-        }
-
-        // Get total count
-        const [countResult] = await runQuery(`SELECT COUNT(*) as total FROM categorise ${whereClause}`, queryParams);
-        const totalRecords = countResult[0].total;
-        const totalPages = Math.ceil(totalRecords / limit);
-
-        // Get paginated data
-        const sql = `SELECT id, title, image, status, type, created_at, updated_at FROM categorise ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`;
-        const [rows] = await runQuery(sql, [...queryParams, limit, offset]);
-
-        res.render('category/list', {
-            data: rows,
-            currentPage: page,
-            totalPages,
-            search,
-            pageName: 'Category'
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
-    }
-};
 
 // 2. Get single category (for edit modal)
 exports.getCategoryById = async (req, res) => {

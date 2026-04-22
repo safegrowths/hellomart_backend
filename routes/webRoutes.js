@@ -18,12 +18,12 @@ router.get('/coupon', pageController.couponForm);
 router.get('/categorisee', pageController.categoriseForm);
 
 // ✅ Get Categories (all / filter)
-router.get('/category/view', pageController.categoryPage);
-router.get('/category/get/:id', pageController.getCategoryById);
-router.post('/category/add', pageController.addCategory);
-router.post('/category/update', pageController.updateCategory);
-router.post('/category/delete', pageController.deleteCategory);
-router.post('/category/toggle-status', pageController.toggleStatus);
+router.get('/category_view', pageController.categoryPage);
+router.get('/category_get/:id', pageController.getCategoryById);
+router.post('/category_add', pageController.addCategory);
+router.post('/category_update', pageController.updateCategory);
+router.post('/category_delete', pageController.deleteCategory);
+router.post('/category_toggle-status', pageController.toggleStatus);
 
 // ✅ Toggle Status
 router.post('/toggle-category', pageController.toggleCategory);

@@ -1,0 +1,472 @@
+<%- include('layout/sidebar') %>
+<%- include('layout/header') %>
+
+<main class="nxl-container">
+    <div class="nxl-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left d-flex align-items-center">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Orders Management</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item">Orders</li>
+                </ul>
+            </div>
+            <div class="page-header-right">
+                <a href="/orders/add" class="btn btn-primary btn-sm">
+                    <i class="feather-plus"></i> Add New Order
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Stats Cards Row -->
+            <div class="row">
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-shopping-cart"></i>
+                                        <span>Total Orders</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="totalOrders">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+18.2%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-dollar-sign"></i>
+                                        <span>Total Revenue</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3">$<span class="counter" id="totalRevenue">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+23.65%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-clock"></i>
+                                        <span>Pending Orders</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="pendingOrders">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-warning text-warning">-3.2%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-check-circle"></i>
+                                        <span>Completed Orders</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="completedOrders">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-primary text-primary">+12.5%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Search -->
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="row mb-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Search</label>
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Order ID or Customer...">
+                                <button class="btn btn-primary" type="button" id="searchBtn"><i class="feather-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="all">All Status</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">From Date</label>
+                            <input type="date" id="fromDate" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">To Date</label>
+                            <input type="date" id="toDate" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <button id="resetFilters" class="btn btn-secondary w-100">Reset Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sr. No</th>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>MRP ($)</th>
+                                    <th>Discount ($)</th>
+                                    <th>Grand Total ($)</th>
+                                    <th>Payment</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Dynamic rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="entriesInfo" class="text-muted"></div>
+                        <nav>
+                            <ul class="pagination mb-0" id="paginationControls"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Custom toggle switch (optional) */
+    .status-switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+    .status-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .3s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+    .action-icons i {
+        font-size: 18px;
+        margin: 0 4px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .action-icons i:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+<script>
+    // ---------- MOCK ORDERS DATA (replace with actual server data) ----------
+    const ordersData = [
+        { id: 1, order_id: "ORD-1001", customer: "Olivia Chen", items: 3, mrp: 299.99, discount: 20.00, grand_total: 279.99, payment: "Credit Card", status: "Delivered", date: "2025-03-15" },
+        { id: 2, order_id: "ORD-1002", customer: "James Rodriguez", items: 2, mrp: 129.50, discount: 10.00, grand_total: 119.50, payment: "PayPal", status: "Shipped", date: "2025-03-18" },
+        { id: 3, order_id: "ORD-1003", customer: "Sophia Williams", items: 5, mrp: 579.00, discount: 50.00, grand_total: 529.00, payment: "Credit Card", status: "Processing", date: "2025-03-20" },
+        { id: 4, order_id: "ORD-1004", customer: "Liam Johnson", items: 1, mrp: 49.99, discount: 0, grand_total: 49.99, payment: "Cash", status: "Pending", date: "2025-03-22" },
+        { id: 5, order_id: "ORD-1005", customer: "Emma Brown", items: 4, mrp: 199.96, discount: 15.00, grand_total: 184.96, payment: "Debit Card", status: "Cancelled", date: "2025-03-23" },
+        { id: 6, order_id: "ORD-1006", customer: "Noah Davis", items: 2, mrp: 319.90, discount: 30.00, grand_total: 289.90, payment: "Credit Card", status: "Delivered", date: "2025-03-25" },
+        { id: 7, order_id: "ORD-1007", customer: "Mia Garcia", items: 3, mrp: 249.95, discount: 25.00, grand_total: 224.95, payment: "PayPal", status: "Processing", date: "2025-03-26" },
+        { id: 8, order_id: "ORD-1008", customer: "Ethan Martinez", items: 1, mrp: 89.00, discount: 5.00, grand_total: 84.00, payment: "Credit Card", status: "Shipped", date: "2025-03-27" },
+        { id: 9, order_id: "ORD-1009", customer: "Isabella Lee", items: 6, mrp: 899.99, discount: 100.00, grand_total: 799.99, payment: "Debit Card", status: "Pending", date: "2025-03-28" },
+        { id: 10, order_id: "ORD-1010", customer: "Lucas Wilson", items: 2, mrp: 75.25, discount: 0, grand_total: 75.25, payment: "Cash", status: "Delivered", date: "2025-03-29" },
+        { id: 11, order_id: "ORD-1011", customer: "Amelia Taylor", items: 3, mrp: 410.45, discount: 40.00, grand_total: 370.45, payment: "Credit Card", status: "Shipped", date: "2025-03-30" },
+        { id: 12, order_id: "ORD-1012", customer: "Mason Anderson", items: 1, mrp: 129.00, discount: 10.00, grand_total: 119.00, payment: "PayPal", status: "Processing", date: "2025-04-01" }
+    ];
+
+    let filteredData = [...ordersData];
+    let currentPage = 1;
+    let perPage = 10;
+
+    // DOM elements
+    const tbody = document.getElementById('ordersTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const resetBtn = document.getElementById('resetFilters');
+    const searchBtn = document.getElementById('searchBtn');
+    const entriesInfo = document.getElementById('entriesInfo');
+    const paginationControls = document.getElementById('paginationControls');
+
+    // Update stats counters
+    function updateStats() {
+        const total = ordersData.length;
+        const revenue = ordersData.reduce((sum, o) => sum + o.grand_total, 0);
+        const pending = ordersData.filter(o => o.status === 'Pending' || o.status === 'Processing').length;
+        const completed = ordersData.filter(o => o.status === 'Delivered').length;
+        document.getElementById('totalOrders').innerText = total;
+        document.getElementById('totalRevenue').innerText = revenue.toFixed(2);
+        document.getElementById('pendingOrders').innerText = pending;
+        document.getElementById('completedOrders').innerText = completed;
+    }
+
+    // Apply filters (search, status, date)
+    function applyFilters() {
+        let result = [...ordersData];
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm) {
+            result = result.filter(o => o.order_id.toLowerCase().includes(searchTerm) || o.customer.toLowerCase().includes(searchTerm));
+        }
+        const status = statusFilter.value;
+        if (status !== 'all') result = result.filter(o => o.status === status);
+        const from = fromDate.value ? new Date(fromDate.value) : null;
+        if (from) result = result.filter(o => new Date(o.date) >= from);
+        const to = toDate.value ? new Date(toDate.value) : null;
+        if (to) result = result.filter(o => new Date(o.date) <= to);
+        filteredData = result;
+        currentPage = 1;
+        renderTable();
+    }
+
+    // Render table with pagination
+    function renderTable() {
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageOrders = filteredData.slice(start, end);
+        tbody.innerHTML = '';
+        if (pageOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" class="text-center">No orders found</td></tr>';
+        } else {
+            pageOrders.forEach((order, idx) => {
+                const srNo = start + idx + 1;
+                const statusChecked = (order.status === 'Delivered');
+                let badgeClass = '';
+                switch(order.status) {
+                    case 'Delivered': badgeClass = 'badge bg-success text-white'; break;
+                    case 'Pending': badgeClass = 'badge bg-warning text-dark'; break;
+                    case 'Processing': badgeClass = 'badge bg-info text-dark'; break;
+                    case 'Shipped': badgeClass = 'badge bg-primary text-white'; break;
+                    case 'Cancelled': badgeClass = 'badge bg-danger text-white'; break;
+                    default: badgeClass = 'badge bg-secondary';
+                }
+                const row = `
+                    <tr>
+                        <td>${srNo}</td>
+                        <td>${order.order_id}</td>
+                        <td>${order.customer}</td>
+                        <td>${order.items}</td>
+                        <td>$${order.mrp.toFixed(2)}</td>
+                        <td>$${order.discount.toFixed(2)}</td>
+                        <td><strong>$${order.grand_total.toFixed(2)}</strong></td>
+                        <td>${order.payment}</td>
+                        <td>
+                            <label class="status-switch">
+                                <input type="checkbox" class="status-toggle" data-id="${order.id}" ${statusChecked ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
+                            <span class="${badgeClass} ms-2">${order.status}</span>
+                        </td>
+                        <td>${order.date}</td>
+                        <td class="action-icons">
+                            <i class="feather-edit text-primary edit-order" data-id="${order.id}" title="Edit"></i>
+                            <i class="feather-trash-2 text-danger delete-order" data-id="${order.id}" title="Delete"></i>
+                            <i class="feather-eye text-info view-order" data-id="${order.id}" title="View"></i>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        // Update pagination info
+        const totalPages = Math.ceil(filteredData.length / perPage);
+        const startEntry = filteredData.length === 0 ? 0 : start + 1;
+        const endEntry = Math.min(end, filteredData.length);
+        entriesInfo.innerText = `Showing ${startEntry} to ${endEntry} of ${filteredData.length} orders`;
+        paginationControls.innerHTML = '';
+        if (totalPages > 1) {
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            if (currentPage !== 1) prevLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage--; renderTable(); });
+            paginationControls.appendChild(prevLi);
+            // Page numbers (show max 5)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage = i; renderTable(); });
+                paginationControls.appendChild(li);
+            }
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            if (currentPage !== totalPages) nextLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage++; renderTable(); });
+            paginationControls.appendChild(nextLi);
+        }
+        // Re-attach event listeners for toggles and action buttons
+        attachEventListeners();
+    }
+
+    // Attach event handlers (status toggle, edit, delete, view)
+    function attachEventListeners() {
+        document.querySelectorAll('.status-toggle').forEach(toggle => {
+            toggle.removeEventListener('change', handleStatusChange);
+            toggle.addEventListener('change', handleStatusChange);
+        });
+        document.querySelectorAll('.edit-order').forEach(btn => {
+            btn.removeEventListener('click', handleEdit);
+            btn.addEventListener('click', handleEdit);
+        });
+        document.querySelectorAll('.delete-order').forEach(btn => {
+            btn.removeEventListener('click', handleDelete);
+            btn.addEventListener('click', handleDelete);
+        });
+        document.querySelectorAll('.view-order').forEach(btn => {
+            btn.removeEventListener('click', handleView);
+            btn.addEventListener('click', handleView);
+        });
+    }
+
+    function handleStatusChange(e) {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        const isChecked = e.target.checked;
+        const newStatus = isChecked ? 'Delivered' : 'Pending';
+        // Simulate AJAX call (replace with real fetch)
+        fetch('/orders/status-toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status: newStatus })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const order = ordersData.find(o => o.id === id);
+                if (order) order.status = newStatus;
+                // Update the status badge text and class
+                const row = e.target.closest('tr');
+                const statusSpan = row.querySelector('.badge');
+                if (statusSpan) {
+                    statusSpan.innerText = newStatus;
+                    statusSpan.className = `badge ${newStatus === 'Delivered' ? 'bg-success' : 'bg-warning'} text-white`;
+                }
+                updateStats(); // refresh counters
+                // Optionally re-filter or re-render? we just update stats and local data.
+                applyFilters(); // this will refresh table with new status
+            } else {
+                alert(data.message || 'Failed to update');
+                e.target.checked = !isChecked;
+            }
+        })
+        .catch(err => { console.error(err); alert('Error occurred'); e.target.checked = !isChecked; });
+    }
+
+    function handleEdit(e) {
+        const id = e.currentTarget.getAttribute('data-id');
+        alert(`Edit order ID: ${id} - implement your edit logic`);
+        // window.location.href = `/orders/edit/${id}`;
+    }
+    function handleDelete(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        if (confirm('Delete this order? This action cannot be undone.')) {
+            // Simulate delete API
+            fetch('/orders/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const index = ordersData.findIndex(o => o.id === id);
+                    if (index !== -1) ordersData.splice(index, 1);
+                    updateStats();
+                    applyFilters(); // refresh table
+                } else {
+                    alert(data.message || 'Delete failed');
+                }
+            })
+            .catch(err => { console.error(err); alert('Error occurred'); });
+        }
+    }
+    function handleView(e) {
+        const id = e.currentTarget.getAttribute('data-id');
+        alert(`View details for order ${id} - implement modal or page`);
+        // window.location.href = `/orders/view/${id}`;
+    }
+
+    // Reset all filters
+    function resetFilters() {
+        searchInput.value = '';
+        statusFilter.value = 'all';
+        fromDate.value = '';
+        toDate.value = '';
+        applyFilters();
+    }
+
+    // Event listeners for filter controls
+    searchBtn.addEventListener('click', applyFilters);
+    searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') applyFilters(); });
+    statusFilter.addEventListener('change', applyFilters);
+    fromDate.addEventListener('change', applyFilters);
+    toDate.addEventListener('change', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+
+    // Initial load
+    updateStats();
+    applyFilters();
+</script>
+
+<%- include('layout/footer') %>

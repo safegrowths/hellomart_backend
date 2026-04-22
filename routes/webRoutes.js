@@ -14,14 +14,24 @@ router.get('/settings', pageController.settingsPage);
 router.get('/product-attributes', pageController.getProductAttributes);
 // ✅ Add Category
 router.post('/add-category', pageController.addCategory);
+router.get('/coupon', pageController.couponForm);
+router.get('/categorisee', pageController.categoriseForm);
 
 // ✅ Get Categories (all / filter)
-router.get('/categories', pageController.getCategories);
+
 
 // ✅ Toggle Status
 router.post('/toggle-category', pageController.toggleCategory);
 
 // ✅ Delete Category
 router.post('/delete-category', pageController.deleteCategory);
+router.get('/banner-list', pageController.bannerPage);
+router.get('/orders-add', pageController.showAddOrderForm);
+router.post('/orders-create', pageController.createOrder);
+router.get('/products', pageController.productsForm);
+router.get('/transactions', pageController.transactionsForm);
+
+
+// HTML pages
 
 module.exports = router;

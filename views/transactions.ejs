@@ -1,0 +1,481 @@
+<%- include('layout/sidebar') %>
+<%- include('layout/header') %>
+
+<main class="nxl-container">
+    <div class="nxl-content">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <div>
+                <h5 class="mb-1 fw-semibold">Transaction Management</h5>
+                <ul class="breadcrumb d-flex gap-2 list-unstyled small text-muted">
+                    <li><a href="/" class="text-decoration-none">Home</a></li>
+                    <li>/</li>
+                    <li>Transactions</li>
+                </ul>
+            </div>
+            <div>
+                <a href="#" class="btn btn-primary btn-sm" id="addTransactionBtn">
+                    <i class="feather-plus"></i> Add Transaction
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="row">
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-file-text"></i>
+                                    <span>Total Transactions</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="totalTransactions">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-success text-success">+8.4%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-dollar-sign"></i>
+                                    <span>Total Volume</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3">$<span class="counter" id="totalAmount">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-success text-success">+12.3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-check-circle"></i>
+                                    <span>Completed</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="completedCount">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-primary text-primary">+5.2%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-alert-circle"></i>
+                                    <span>Pending / Failed</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="pendingFailedCount">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-warning text-warning">-2.1%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="row mb-3 align-items-end g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <div class="input-group">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Txn ID or Customer...">
+                            <button class="btn btn-primary" type="button" id="searchBtn"><i class="feather-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="all">All Status</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Failed">Failed</option>
+                            <option value="Refunded">Refunded</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Payment Method</label>
+                        <select id="paymentFilter" class="form-select">
+                            <option value="all">All Methods</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="PayPal">PayPal</option>
+                            <option value="Debit Card">Debit Card</option>
+                            <option value="Cash">Cash</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">From Date</label>
+                        <input type="date" id="fromDate" class="form-control">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">To Date</label>
+                        <input type="date" id="toDate" class="form-control">
+                    </div>
+                    <div class="col-md-1">
+                        <button id="resetFilters" class="btn btn-secondary w-100">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Transaction ID</th>
+                                <th>Customer / Ref</th>
+                                <th>Amount ($)</th>
+                                <th>Payment Method</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                    <div id="entriesInfo" class="text-muted small"></div>
+                    <nav>
+                        <ul class="pagination mb-0" id="paginationControls"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Additional custom styles for transaction page */
+    .status-switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+    .status-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .3s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+    .action-icons i {
+        font-size: 18px;
+        margin: 0 4px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .action-icons i:hover {
+        transform: scale(1.1);
+    }
+    .badge.bg-soft-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .badge.bg-soft-primary {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .badge.bg-soft-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+</style>
+
+<script>
+    // ---------- MOCK TRANSACTIONS DATA (fixed) ----------
+    let transactionsData = [
+        { id: 1, transaction_id: "TXN-1001", customer: "Olivia Chen", amount: 279.99, payment_method: "Credit Card", status: "Completed", date: "2025-03-15" },
+        { id: 2, transaction_id: "TXN-1002", customer: "James Rodriguez", amount: 119.50, payment_method: "PayPal", status: "Pending", date: "2025-03-18" },
+        { id: 3, transaction_id: "TXN-1003", customer: "Sophia Williams", amount: 529.00, payment_method: "Credit Card", status: "Completed", date: "2025-03-20" },
+        { id: 4, transaction_id: "TXN-1004", customer: "Liam Johnson", amount: 49.99, payment_method: "Cash", status: "Failed", date: "2025-03-22" },
+        { id: 5, transaction_id: "TXN-1005", customer: "Emma Brown", amount: 184.96, payment_method: "Debit Card", status: "Refunded", date: "2025-03-23" },
+        { id: 6, transaction_id: "TXN-1006", customer: "Noah Davis", amount: 289.90, payment_method: "Credit Card", status: "Completed", date: "2025-03-25" },
+        { id: 7, transaction_id: "TXN-1007", customer: "Mia Garcia", amount: 224.95, payment_method: "PayPal", status: "Pending", date: "2025-03-26" },
+        { id: 8, transaction_id: "TXN-1008", customer: "Ethan Martinez", amount: 84.00, payment_method: "Credit Card", status: "Pending", date: "2025-03-27" }, // fixed status
+        { id: 9, transaction_id: "TXN-1009", customer: "Isabella Lee", amount: 799.99, payment_method: "Debit Card", status: "Completed", date: "2025-03-28" },
+        { id: 10, transaction_id: "TXN-1010", customer: "Lucas Wilson", amount: 75.25, payment_method: "Cash", status: "Failed", date: "2025-03-29" },
+        { id: 11, transaction_id: "TXN-1011", customer: "Amelia Taylor", amount: 370.45, payment_method: "Credit Card", status: "Completed", date: "2025-03-30" },
+        { id: 12, transaction_id: "TXN-1012", customer: "Mason Anderson", amount: 119.00, payment_method: "PayPal", status: "Pending", date: "2025-04-01" },
+        { id: 13, transaction_id: "TXN-1013", customer: "Charlotte White", amount: 660.30, payment_method: "Credit Card", status: "Refunded", date: "2025-04-02" },
+        { id: 14, transaction_id: "TXN-1014", customer: "Benjamin Moore", amount: 45.00, payment_method: "Debit Card", status: "Completed", date: "2025-04-03" }
+    ];
+
+    let filteredTransactions = [...transactionsData];
+    let currentPage = 1;
+    const perPage = 10;
+
+    // DOM elements
+    const tbody = document.getElementById('transactionsTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const paymentFilter = document.getElementById('paymentFilter');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const resetBtn = document.getElementById('resetFilters');
+    const searchBtn = document.getElementById('searchBtn');
+    const entriesInfo = document.getElementById('entriesInfo');
+    const paginationControls = document.getElementById('paginationControls');
+
+    // Update stats cards
+    function updateStats() {
+        const total = transactionsData.length;
+        const totalAmount = transactionsData.reduce((sum, t) => sum + t.amount, 0);
+        const completed = transactionsData.filter(t => t.status === 'Completed').length;
+        const pendingFailed = transactionsData.filter(t => t.status === 'Pending' || t.status === 'Failed' || t.status === 'Refunded').length;
+        document.getElementById('totalTransactions').innerText = total;
+        document.getElementById('totalAmount').innerText = totalAmount.toFixed(2);
+        document.getElementById('completedCount').innerText = completed;
+        document.getElementById('pendingFailedCount').innerText = pendingFailed;
+    }
+
+    // Apply filters
+    function applyFilters() {
+        let result = [...transactionsData];
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm) {
+            result = result.filter(t => t.transaction_id.toLowerCase().includes(searchTerm) || t.customer.toLowerCase().includes(searchTerm));
+        }
+        const statusVal = statusFilter.value;
+        if (statusVal !== 'all') result = result.filter(t => t.status === statusVal);
+        const paymentVal = paymentFilter.value;
+        if (paymentVal !== 'all') result = result.filter(t => t.payment_method === paymentVal);
+        const from = fromDate.value ? new Date(fromDate.value) : null;
+        if (from) result = result.filter(t => new Date(t.date) >= from);
+        const to = toDate.value ? new Date(toDate.value) : null;
+        if (to) result = result.filter(t => new Date(t.date) <= to);
+        filteredTransactions = result;
+        currentPage = 1;
+        renderTable();
+    }
+
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case 'Completed': return 'bg-success text-white';
+            case 'Pending': return 'bg-warning text-dark';
+            case 'Failed': return 'bg-danger text-white';
+            case 'Refunded': return 'bg-secondary text-white';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function renderTable() {
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageTransactions = filteredTransactions.slice(start, end);
+        tbody.innerHTML = '';
+        if (pageTransactions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No transactions found</td></tr>';
+        } else {
+            pageTransactions.forEach((txn, idx) => {
+                const srNo = start + idx + 1;
+                const isCompleted = txn.status === 'Completed';
+                const badgeClass = getStatusBadgeClass(txn.status);
+                const row = `
+                    <tr>
+                        <td>${srNo}</td>
+                        <td class="fw-semibold">${txn.transaction_id}</td>
+                        <td>${txn.customer}</td>
+                        <td><strong>$${txn.amount.toFixed(2)}</strong></td>
+                        <td>${txn.payment_method}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="status-switch">
+                                    <input type="checkbox" class="status-toggle" data-id="${txn.id}" ${isCompleted ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="badge ${badgeClass} px-3 py-1">${txn.status}</span>
+                            </div>
+                        </td>
+                        <td>${txn.date}</td>
+                        <td class="action-icons">
+                            <i class="feather-edit text-primary edit-txn" data-id="${txn.id}" title="Edit"></i>
+                            <i class="feather-trash-2 text-danger delete-txn" data-id="${txn.id}" title="Delete"></i>
+                            <i class="feather-eye text-info view-txn" data-id="${txn.id}" title="View"></i>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        // Pagination info
+        const totalPages = Math.ceil(filteredTransactions.length / perPage);
+        const startEntry = filteredTransactions.length === 0 ? 0 : start + 1;
+        const endEntry = Math.min(end, filteredTransactions.length);
+        entriesInfo.innerText = `Showing ${startEntry} to ${endEntry} of ${filteredTransactions.length} transactions`;
+        paginationControls.innerHTML = '';
+        if (totalPages > 1) {
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            if (currentPage !== 1) prevLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage--; renderTable(); attachDynamicEvents(); });
+            paginationControls.appendChild(prevLi);
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage = i; renderTable(); attachDynamicEvents(); });
+                paginationControls.appendChild(li);
+            }
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            if (currentPage !== totalPages) nextLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage++; renderTable(); attachDynamicEvents(); });
+            paginationControls.appendChild(nextLi);
+        }
+        attachDynamicEvents();
+    }
+
+    function handleStatusToggle(e) {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        const isChecked = e.target.checked;
+        const newStatus = isChecked ? 'Completed' : 'Pending';
+        const transaction = transactionsData.find(t => t.id === id);
+        if (!transaction) return;
+        // Simulate API call
+        fetch('/api/transactions/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status: newStatus })
+        }).catch(() => {});
+        transaction.status = newStatus;
+        updateStats();
+        applyFilters();
+    }
+
+    function handleEdit(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        alert(`Edit transaction ID: ${id} - implement edit functionality`);
+    }
+    function handleDelete(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        if (confirm('Delete this transaction permanently?')) {
+            const index = transactionsData.findIndex(t => t.id === id);
+            if (index !== -1) {
+                transactionsData.splice(index, 1);
+                updateStats();
+                applyFilters();
+            }
+        }
+    }
+    function handleView(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        const txn = transactionsData.find(t => t.id === id);
+        if (txn) {
+            alert(`Transaction Details:\nID: ${txn.transaction_id}\nCustomer: ${txn.customer}\nAmount: $${txn.amount}\nMethod: ${txn.payment_method}\nStatus: ${txn.status}\nDate: ${txn.date}`);
+        } else {
+            alert('Transaction not found');
+        }
+    }
+
+    function attachDynamicEvents() {
+        document.querySelectorAll('.status-toggle').forEach(toggle => {
+            toggle.removeEventListener('change', handleStatusToggle);
+            toggle.addEventListener('change', handleStatusToggle);
+        });
+        document.querySelectorAll('.edit-txn').forEach(btn => {
+            btn.removeEventListener('click', handleEdit);
+            btn.addEventListener('click', handleEdit);
+        });
+        document.querySelectorAll('.delete-txn').forEach(btn => {
+            btn.removeEventListener('click', handleDelete);
+            btn.addEventListener('click', handleDelete);
+        });
+        document.querySelectorAll('.view-txn').forEach(btn => {
+            btn.removeEventListener('click', handleView);
+            btn.addEventListener('click', handleView);
+        });
+    }
+
+    function resetFilters() {
+        searchInput.value = '';
+        statusFilter.value = 'all';
+        paymentFilter.value = 'all';
+        fromDate.value = '';
+        toDate.value = '';
+        applyFilters();
+    }
+
+    // Add transaction demo
+    document.getElementById('addTransactionBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const newId = transactionsData.length + 1;
+        const newTxn = {
+            id: newId,
+            transaction_id: `TXN-${2000 + newId}`,
+            customer: "New Customer",
+            amount: 99.99,
+            payment_method: "Credit Card",
+            status: "Pending",
+            date: new Date().toISOString().slice(0,10)
+        };
+        transactionsData.push(newTxn);
+        updateStats();
+        applyFilters();
+        alert("Demo: New transaction added (Pending).");
+    });
+
+    // Event listeners
+    searchBtn.addEventListener('click', applyFilters);
+    searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') applyFilters(); });
+    statusFilter.addEventListener('change', applyFilters);
+    paymentFilter.addEventListener('change', applyFilters);
+    fromDate.addEventListener('change', applyFilters);
+    toDate.addEventListener('change', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+
+    // Initial load
+    updateStats();
+    applyFilters();
+</script>
+
+<%- include('layout/footer') %>

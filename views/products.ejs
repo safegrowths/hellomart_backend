@@ -1,504 +1,392 @@
-<%- include('layout/header', { title: 'Product Attributes', showNavigation: true }) %>
-<%- include('layout/sidebar', { currentPage: 'product-attributes' }) %>
+<%- include('layout/sidebar') %>
+<%- include('layout/header') %>
 
-<div class="main-content">
-  <div class="page-header">
-    <h1><i class="fas fa-table"></i> Product Attributes – Master Table View</h1>
-    <p>All product attributes flattened into a single table with pagination</p>
-  </div>
+<main class="nxl-container">
+    <div class="nxl-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-left d-flex align-items-center">
+                <div class="page-header-title">
+                    <h5 class="m-b-10">Products Management</h5>
+                </div>
+                <ul class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item">Products</li>
+                </ul>
+            </div>
+            <div class="page-header-right">
+                <a href="/products/add" class="btn btn-primary btn-sm">
+                    <i class="feather-plus"></i> Add New Product
+                </a>
+            </div>
+        </div>
 
-  <% 
-    // Flatten all products and their attributes into one array
-    let flatRows = [];
-    if (products && products.length) {
-      products.forEach(product => {
-        let attributes = product.attributes;
-        if (typeof attributes === 'string') {
-          try { attributes = JSON.parse(attributes); } catch(e) { attributes = []; }
-        }
-        if (!Array.isArray(attributes)) attributes = [];
-        
-        if (attributes.length === 0) {
-          flatRows.push({
-            product_id: product.id,
-            vendor_name: product.vendor_name || 'Unnamed Product',
-            category_id: product.category_id || '—',
-            attr_id: '—',
-            attr_name: '—',
-            price: null,
-            weight: '—',
-            grocery_type: '',
-            discounted_price: null,
-            stock: 0,
-            image: ''
-          });
-        } else {
-          attributes.forEach(attr => {
-            flatRows.push({
-              product_id: product.id,
-              vendor_name: product.vendor_name || 'Unnamed Product',
-              category_id: product.category_id || '—',
-              attr_id: attr.id || '—',
-              attr_name: attr.name || 'Default',
-              price: attr.price && !isNaN(parseFloat(attr.price)) ? parseFloat(attr.price) : null,
-              weight: attr.weight || '—',
-              grocery_type: attr.grocery_type || '',
-              discounted_price: attr.discounted_price && !isNaN(parseFloat(attr.discounted_price)) ? parseFloat(attr.discounted_price) : null,
-              stock: (attr.stock !== undefined && attr.stock !== null) ? parseInt(attr.stock) : 0,
-              image: attr.image && typeof attr.image === 'string' ? attr.image.trim() : ''
-            });
-          });
-        }
-      });
-    }
-  %>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Stats Cards Row -->
+            <div class="row">
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-package"></i>
+                                        <span>Total Products</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="totalProducts">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+12.5%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-dollar-sign"></i>
+                                        <span>Total Value</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3">$<span class="counter" id="totalValue">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-success text-success">+8.3%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-alert-circle"></i>
+                                        <span>Low Stock</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="lowStock">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-warning text-warning">Needs attention</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-md-6">
+                    <div class="card stretch stretch-full">
+                        <div class="card-body">
+                            <div class="hstack justify-content-between">
+                                <div>
+                                    <div class="hstack gap-2 mb-4">
+                                        <i class="feather-tag"></i>
+                                        <span>Categories</span>
+                                    </div>
+                                    <h4 class="fw-bolder mb-3"><span class="counter" id="totalCategories">0</span></h4>
+                                </div>
+                                <a href="javascript:void(0);" class="badge bg-soft-primary text-primary">+2 new</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-  <% if (flatRows.length) { %>
-    <div class="table-container">
-      <div class="table-responsive">
-        <table class="master-table" id="attributesTable">
-          <thead>
-            <tr>
-              <th>Product Name</th>
-              <th>Category ID</th>
-              <th>Attr ID</th>
-              <th>Variant Name</th>
-              <th>Price (₹)</th>
-              <th>Weight</th>
-              <th>Disc. Price (₹)</th>
-              <th>Stock</th>
-              <th>Image</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody">
-            <!-- All rows will be populated by JavaScript for pagination -->
-          </tbody>
-        </table>
-      </div>
+            <!-- Filters & Search -->
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="row mb-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">Search</label>
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Product name or SKU...">
+                                <button class="btn btn-primary" type="button" id="searchBtn"><i class="feather-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Category</label>
+                            <select id="categoryFilter" class="form-select">
+                                <option value="all">All Categories</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Home & Living">Home & Living</option>
+                                <option value="Books">Books</option>
+                                <option value="Toys">Toys</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Status</label>
+                            <select id="statusFilter" class="form-select">
+                                <option value="all">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Out of Stock">Out of Stock</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Min Stock</label>
+                            <input type="number" id="minStock" class="form-control" placeholder="Min quantity">
+                        </div>
+                        <div class="col-md-2">
+                            <button id="resetFilters" class="btn btn-secondary w-100">Reset Filters</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="card stretch stretch-full">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Sr. No</th>
+                                    <th>SKU</th>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Price ($)</th>
+                                    <th>Stock</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTableBody">
+                                <!-- Dynamic rows injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div id="entriesInfo" class="text-muted"></div>
+                        <nav>
+                            <ul class="pagination mb-0" id="paginationControls"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <!-- Pagination Controls -->
-    <div class="pagination-wrapper">
-      <div class="pagination-info">
-        Showing <span id="startRow">0</span> - <span id="endRow">0</span> of <span id="totalRows"><%= flatRows.length %></span> entries
-      </div>
-      <div class="pagination-controls">
-        <button id="prevPageBtn" class="page-btn" disabled>« Previous</button>
-        <div id="pageNumbers" class="page-numbers"></div>
-        <button id="nextPageBtn" class="page-btn" disabled>Next »</button>
-      </div>
-      <div class="per-page-selector">
-        <label>Show</label>
-        <select id="perPageSelect">
-          <option value="10">10</option>
-          <option value="20" selected>20</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="<%= flatRows.length %>">All</option>
-        </select>
-        <label>entries</label>
-      </div>
-    </div>
-
-    <script>
-      // Pass flatRows data to JavaScript
-      const allRows = "";
-      let currentPage = 1;
-      let rowsPerPage = 20; // default
-      let totalPages = 1;
-
-      function renderTable() {
-        const start = (currentPage - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        const pageRows = allRows.slice(start, end);
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-
-        if (pageRows.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="9" class="no-data">No data on this page</td></tr>';
-        } else {
-          pageRows.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td data-label="Product Name">
-                ${escapeHtml(row.vendor_name)}
-                <small class="product-id">(ID: ${row.product_id})</small>
-              </td>
-              <td data-label="Category ID">${escapeHtml(row.category_id)}</td>
-              <td data-label="Attr ID">${escapeHtml(row.attr_id)}</td>
-              <td data-label="Variant Name"><strong>${escapeHtml(row.attr_name)}</strong></td>
-              <td data-label="Price (₹)" class="price-cell">
-                ${row.price ? '₹' + row.price.toLocaleString('en-IN') : '—'}
-              </td>
-              <td data-label="Weight">
-                ${escapeHtml(row.weight)} ${escapeHtml(row.grocery_type)}
-              </td>
-              <td data-label="Disc. Price (₹)" class="price-cell">
-                ${row.discounted_price ? '₹' + row.discounted_price.toLocaleString('en-IN') : '—'}
-              </td>
-              <td data-label="Stock" class="${row.stock == 0 ? 'out-of-stock' : 'in-stock'}">
-                ${row.stock} left
-              </td>
-              <td data-label="Image">
-                ${row.image ? `<a href="${escapeHtml(row.image)}" target="_blank" rel="noopener noreferrer" class="image-link"><i class="fas fa-external-link-alt"></i> View</a>` : '—'}
-              </td>
-            `;
-            tbody.appendChild(tr);
-          });
-        }
-
-        // Update info text
-        const total = allRows.length;
-        const startRow = total === 0 ? 0 : start + 1;
-        const endRow = Math.min(end, total);
-        document.getElementById('startRow').innerText = startRow;
-        document.getElementById('endRow').innerText = endRow;
-        document.getElementById('totalRows').innerText = total;
-
-        // Update pagination buttons
-        totalPages = Math.ceil(total / rowsPerPage);
-        document.getElementById('prevPageBtn').disabled = currentPage === 1;
-        document.getElementById('nextPageBtn').disabled = currentPage === totalPages || total === 0;
-
-        renderPageNumbers();
-      }
-
-      function renderPageNumbers() {
-        const container = document.getElementById('pageNumbers');
-        container.innerHTML = '';
-        if (totalPages <= 7) {
-          for (let i = 1; i <= totalPages; i++) {
-            addPageButton(i);
-          }
-        } else {
-          // Show first, last, current with ellipsis
-          addPageButton(1);
-          if (currentPage > 3) addEllipsis();
-          let start = Math.max(2, currentPage - 1);
-          let end = Math.min(totalPages - 1, currentPage + 1);
-          for (let i = start; i <= end; i++) {
-            addPageButton(i);
-          }
-          if (currentPage < totalPages - 2) addEllipsis();
-          addPageButton(totalPages);
-        }
-      }
-
-      function addPageButton(page) {
-        const btn = document.createElement('button');
-        btn.innerText = page;
-        btn.classList.add('page-num');
-        if (page === currentPage) btn.classList.add('active');
-        btn.addEventListener('click', () => {
-          currentPage = page;
-          renderTable();
-        });
-        document.getElementById('pageNumbers').appendChild(btn);
-      }
-
-      function addEllipsis() {
-        const span = document.createElement('span');
-        span.innerText = '...';
-        span.classList.add('ellipsis');
-        document.getElementById('pageNumbers').appendChild(span);
-      }
-
-      function escapeHtml(str) {
-        if (!str) return '';
-        return String(str).replace(/[&<>]/g, function(m) {
-          if (m === '&') return '&amp;';
-          if (m === '<') return '&lt;';
-          if (m === '>') return '&gt;';
-          return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-          return c;
-        });
-      }
-
-      // Event listeners
-      document.getElementById('perPageSelect').addEventListener('change', (e) => {
-        rowsPerPage = parseInt(e.target.value);
-        if (rowsPerPage === allRows.length) {
-          rowsPerPage = allRows.length;
-        }
-        currentPage = 1;
-        renderTable();
-      });
-
-      document.getElementById('prevPageBtn').addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderTable();
-        }
-      });
-
-      document.getElementById('nextPageBtn').addEventListener('click', () => {
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderTable();
-        }
-      });
-
-      // Initial render
-      renderTable();
-    </script>
-  <% } else { %>
-    <div class="alert alert-info">
-      <i class="fas fa-info-circle"></i> No products with attributes found in database.
-    </div>
-  <% } %>
-</div>
+</main>
 
 <style>
-  * {
-    box-sizing: border-box;
-  }
-  .main-content {
-    padding: 28px 32px;
-    background: #f1f5f9;
-    min-height: 100vh;
-  }
-  .page-header {
-    margin-bottom: 28px;
-  }
-  .page-header h1 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 6px;
-  }
-  .page-header p {
-    color: #475569;
-    font-size: 0.9rem;
-  }
-  .table-container {
-    background: white;
-    border-radius: 24px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-  }
-  .table-responsive {
-    overflow-x: auto;
-  }
-  .master-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    min-width: 900px;
-  }
-  .master-table th {
-    text-align: left;
-    background: #f8fafc;
-    padding: 16px 14px;
-    font-weight: 600;
-    color: #1e293b;
-    border-bottom: 2px solid #e2e8f0;
-    font-size: 0.85rem;
-  }
-  .master-table td {
-    padding: 14px;
-    border-bottom: 1px solid #f0f2f5;
-    vertical-align: middle;
-    color: #1e293b;
-  }
-  .master-table tbody tr:hover {
-    background-color: #fefce8;
-  }
-  .product-id {
-    font-size: 0.7rem;
-    color: #64748b;
-    margin-left: 6px;
-  }
-  .price-cell {
-    font-weight: 600;
-    color: #0f3b2c;
-  }
-  .in-stock {
-    color: #10b981;
-    font-weight: 700;
-    background: #e6f7ec;
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 30px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-  }
-  .out-of-stock {
-    color: #ef4444;
-    font-weight: 700;
-    background: #fee2e2;
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 30px;
-    font-size: 0.75rem;
-    white-space: nowrap;
-  }
-  .image-link {
-    color: #4f46e5;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #f1f5f9;
-    padding: 5px 12px;
-    border-radius: 30px;
-    font-size: 0.7rem;
-    transition: all 0.2s;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  .image-link:hover {
-    background: #e0e7ff;
-    text-decoration: none;
-    color: #3730a3;
-  }
-  .alert-info {
-    background: #e0f2fe;
-    padding: 24px;
-    border-radius: 24px;
-    text-align: center;
-    color: #0369a1;
-    font-weight: 500;
-  }
-
-  /* Pagination styles */
-  .pagination-wrapper {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    gap: 16px;
-    background: white;
-    padding: 16px 20px;
-    border-radius: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
-  }
-  .pagination-info {
-    font-size: 0.85rem;
-    color: #475569;
-  }
-  .pagination-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .page-btn, .page-num {
-    background: white;
-    border: 1px solid #cbd5e1;
-    padding: 6px 12px;
-    border-radius: 30px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: #1e293b;
-  }
-  .page-btn:hover:not(:disabled), .page-num:hover:not(.active) {
-    background: #f1f5f9;
-    border-color: #94a3b8;
-  }
-  .page-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .page-num.active {
-    background: #4f46e5;
-    border-color: #4f46e5;
-    color: white;
-  }
-  .page-numbers {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .ellipsis {
-    padding: 0 4px;
-    color: #64748b;
-  }
-  .per-page-selector {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: #475569;
-  }
-  .per-page-selector select {
-    padding: 5px 8px;
-    border-radius: 20px;
-    border: 1px solid #cbd5e1;
-    background: white;
-    font-size: 0.8rem;
-  }
-  .no-data {
-    text-align: center;
-    padding: 40px;
-    color: #64748b;
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 768px) {
-    .main-content {
-      padding: 16px;
+    .action-icons i {
+        font-size: 18px;
+        margin: 0 4px;
+        cursor: pointer;
+        transition: 0.2s;
     }
-    .master-table {
-      min-width: 100%;
+    .action-icons i:hover {
+        transform: scale(1.1);
     }
-    .master-table thead {
-      display: none;
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
     }
-    .master-table tbody tr {
-      display: block;
-      margin-bottom: 20px;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 12px;
-      background: white;
-    }
-    .master-table td {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 8px;
-      border-bottom: 1px solid #eef2ff;
-    }
-    .master-table td:last-child {
-      border-bottom: none;
-    }
-    .master-table td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      width: 40%;
-      color: #334155;
-      font-size: 0.75rem;
-    }
-    .in-stock, .out-of-stock {
-      white-space: normal;
-    }
-    .pagination-wrapper {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .pagination-controls {
-      justify-content: center;
-    }
-    .per-page-selector {
-      justify-content: center;
-    }
-  }
-  @media (max-width: 480px) {
-    .master-table td {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .master-table td::before {
-      width: 100%;
-      margin-bottom: 4px;
-    }
-  }
 </style>
 
-<%- include('layout/footer', { pageScript: 'product-attributes-init.js' }) %>
+<script>
+    // ---------- MOCK PRODUCTS DATA (replace with server data) ----------
+    const productsData = [
+        { id: 1, sku: "SKU-001", name: "Wireless Mouse", category: "Electronics", price: 29.99, stock: 145, status: "Active", created_at: "2025-01-10" },
+        { id: 2, sku: "SKU-002", name: "Gaming Keyboard", category: "Electronics", price: 79.99, stock: 62, status: "Active", created_at: "2025-01-12" },
+        { id: 3, sku: "SKU-003", name: "Cotton T-Shirt", category: "Clothing", price: 19.99, stock: 230, status: "Active", created_at: "2025-01-15" },
+        { id: 4, sku: "SKU-004", name: "Jeans Pant", category: "Clothing", price: 49.99, stock: 89, status: "Active", created_at: "2025-01-18" },
+        { id: 5, sku: "SKU-005", name: "Coffee Table", category: "Home & Living", price: 149.99, stock: 12, status: "Low Stock", created_at: "2025-01-20" },
+        { id: 6, sku: "SKU-006", name: "Novel 'The Journey'", category: "Books", price: 14.99, stock: 0, status: "Out of Stock", created_at: "2025-01-22" },
+        { id: 7, sku: "SKU-007", name: "LED Desk Lamp", category: "Electronics", price: 34.99, stock: 78, status: "Active", created_at: "2025-01-25" },
+        { id: 8, sku: "SKU-008", name: "Kids Puzzle", category: "Toys", price: 12.99, stock: 200, status: "Active", created_at: "2025-01-28" },
+        { id: 9, sku: "SKU-009", name: "Smart Watch", category: "Electronics", price: 199.99, stock: 34, status: "Inactive", created_at: "2025-02-01" },
+        { id: 10, sku: "SKU-010", name: "Yoga Mat", category: "Sports", price: 24.99, stock: 56, status: "Active", created_at: "2025-02-03" },
+        { id: 11, sku: "SKU-011", name: "Bluetooth Speaker", category: "Electronics", price: 59.99, stock: 118, status: "Active", created_at: "2025-02-05" },
+        { id: 12, sku: "SKU-012", name: "Backpack", category: "Accessories", price: 39.99, stock: 5, status: "Low Stock", created_at: "2025-02-07" }
+    ];
+
+    let filteredData = [...productsData];
+    let currentPage = 1;
+    let perPage = 10;
+
+    // DOM elements
+    const tbody = document.getElementById('productsTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const minStockInput = document.getElementById('minStock');
+    const resetBtn = document.getElementById('resetFilters');
+    const searchBtn = document.getElementById('searchBtn');
+    const entriesInfo = document.getElementById('entriesInfo');
+    const paginationControls = document.getElementById('paginationControls');
+
+    // Update stats counters
+    function updateStats() {
+        const total = productsData.length;
+        const totalValue = productsData.reduce((sum, p) => sum + (p.price * p.stock), 0);
+        const lowStockCount = productsData.filter(p => p.stock <= 10 && p.stock > 0).length;
+        const uniqueCategories = [...new Set(productsData.map(p => p.category))];
+        document.getElementById('totalProducts').innerText = total;
+        document.getElementById('totalValue').innerText = totalValue.toFixed(2);
+        document.getElementById('lowStock').innerText = lowStockCount;
+        document.getElementById('totalCategories').innerText = uniqueCategories.length;
+    }
+
+    // Apply filters
+    function applyFilters() {
+        let result = [...productsData];
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm) {
+            result = result.filter(p => p.name.toLowerCase().includes(searchTerm) || p.sku.toLowerCase().includes(searchTerm));
+        }
+        const category = categoryFilter.value;
+        if (category !== 'all') result = result.filter(p => p.category === category);
+        const status = statusFilter.value;
+        if (status !== 'all') result = result.filter(p => p.status === status);
+        const minStock = parseInt(minStockInput.value);
+        if (!isNaN(minStock)) result = result.filter(p => p.stock >= minStock);
+        filteredData = result;
+        currentPage = 1;
+        renderTable();
+    }
+
+    // Render table with pagination
+    function renderTable() {
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageProducts = filteredData.slice(start, end);
+        tbody.innerHTML = '';
+        if (pageProducts.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No products found</td></tr>';
+        } else {
+            pageProducts.forEach((product, idx) => {
+                const srNo = start + idx + 1;
+                let stockClass = '';
+                let stockText = product.stock;
+                if (product.stock === 0) stockClass = 'text-danger fw-bold';
+                else if (product.stock <= 10) stockClass = 'text-warning fw-bold';
+                let statusClass = '';
+                if (product.status === 'Active') statusClass = 'badge bg-success text-white';
+                else if (product.status === 'Inactive') statusClass = 'badge bg-secondary text-white';
+                else if (product.status === 'Out of Stock') statusClass = 'badge bg-danger text-white';
+                else if (product.status === 'Low Stock') statusClass = 'badge bg-warning text-dark';
+                const row = `
+                    <tr>
+                        <td>${srNo}</td>
+                        <td>${product.sku}</td>
+                        <td>${product.name}</td>
+                        <td>${product.category}</td>
+                        <td>$${product.price.toFixed(2)}</td>
+                        <td><span class="${stockClass}">${stockText}</span></td>
+                        <td><span class="${statusClass}">${product.status}</span></td>
+                        <td>${product.created_at}</td>
+                        <td class="action-icons">
+                            <i class="feather-edit text-primary edit-product" data-id="${product.id}" title="Edit"></i>
+                            <i class="feather-trash-2 text-danger delete-product" data-id="${product.id}" title="Delete"></i>
+                            <i class="feather-eye text-info view-product" data-id="${product.id}" title="View"></i>
+                        </td>
+                    </table>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        // Pagination
+        const totalPages = Math.ceil(filteredData.length / perPage);
+        const startEntry = filteredData.length === 0 ? 0 : start + 1;
+        const endEntry = Math.min(end, filteredData.length);
+        entriesInfo.innerText = `Showing ${startEntry} to ${endEntry} of ${filteredData.length} products`;
+        paginationControls.innerHTML = '';
+        if (totalPages > 1) {
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            if (currentPage !== 1) prevLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage--; renderTable(); });
+            paginationControls.appendChild(prevLi);
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage = i; renderTable(); });
+                paginationControls.appendChild(li);
+            }
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            if (currentPage !== totalPages) nextLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage++; renderTable(); });
+            paginationControls.appendChild(nextLi);
+        }
+        attachEventListeners();
+    }
+
+    // Attach action handlers
+    function attachEventListeners() {
+        document.querySelectorAll('.edit-product').forEach(btn => {
+            btn.removeEventListener('click', handleEdit);
+            btn.addEventListener('click', handleEdit);
+        });
+        document.querySelectorAll('.delete-product').forEach(btn => {
+            btn.removeEventListener('click', handleDelete);
+            btn.addEventListener('click', handleDelete);
+        });
+        document.querySelectorAll('.view-product').forEach(btn => {
+            btn.removeEventListener('click', handleView);
+            btn.addEventListener('click', handleView);
+        });
+    }
+
+    function handleEdit(e) {
+        const id = e.currentTarget.getAttribute('data-id');
+        alert(`Edit product ID: ${id} - implement edit form`);
+        // window.location.href = `/products/edit/${id}`;
+    }
+    function handleDelete(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        if (confirm('Delete this product? This action cannot be undone.')) {
+            fetch('/products/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const index = productsData.findIndex(p => p.id === id);
+                    if (index !== -1) productsData.splice(index, 1);
+                    updateStats();
+                    applyFilters();
+                } else {
+                    alert(data.message || 'Delete failed');
+                }
+            })
+            .catch(err => { console.error(err); alert('Error occurred'); });
+        }
+    }
+    function handleView(e) {
+        const id = e.currentTarget.getAttribute('data-id');
+        alert(`View product ID: ${id} - implement details modal/page`);
+        // window.location.href = `/products/view/${id}`;
+    }
+
+    function resetFilters() {
+        searchInput.value = '';
+        categoryFilter.value = 'all';
+        statusFilter.value = 'all';
+        minStockInput.value = '';
+        applyFilters();
+    }
+
+    // Event listeners
+    searchBtn.addEventListener('click', applyFilters);
+    searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') applyFilters(); });
+    categoryFilter.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    minStockInput.addEventListener('input', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+
+    // Initial load
+    updateStats();
+    applyFilters();
+</script>
+
+<%- include('layout/footer') %>

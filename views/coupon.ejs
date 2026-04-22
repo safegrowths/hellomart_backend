@@ -1,0 +1,493 @@
+<%- include('layout/sidebar') %>
+<%- include('layout/header') %>
+
+<main class="nxl-container">
+    <div class="nxl-content">
+        <!-- Page Header -->
+        <div class="page-header d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <div>
+                <h5 class="mb-1 fw-semibold">Coupon Management</h5>
+                <ul class="breadcrumb d-flex gap-2 list-unstyled small text-muted">
+                    <li><a href="/" class="text-decoration-none">Home</a></li>
+                    <li>/</li>
+                    <li>Coupons</li>
+                </ul>
+            </div>
+            <div>
+                <a href="#" class="btn btn-primary btn-sm" id="addCouponBtn">
+                    <i class="feather-plus"></i> Add Coupon
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row -->
+        <div class="row">
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-tag"></i>
+                                    <span>Total Coupons</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="totalCoupons">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-success text-success">+12%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-check-circle"></i>
+                                    <span>Active</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="activeCoupons">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-success text-success">+5%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-clock"></i>
+                                    <span>Expired</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="expiredCoupons">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-warning text-warning">-3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                    <div class="card-body">
+                        <div class="hstack justify-content-between">
+                            <div>
+                                <div class="hstack gap-2 mb-4">
+                                    <i class="feather-zap"></i>
+                                    <span>Total Uses</span>
+                                </div>
+                                <h4 class="fw-bolder mb-3"><span class="counter" id="totalUses">0</span></h4>
+                            </div>
+                            <span class="badge bg-soft-primary text-primary">+24%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="row mb-3 align-items-end g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <div class="input-group">
+                            <input type="text" id="searchInput" class="form-control" placeholder="Coupon code or description...">
+                            <button class="btn btn-primary" type="button" id="searchBtn"><i class="feather-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Discount Type</label>
+                        <select id="typeFilter" class="form-select">
+                            <option value="all">All Types</option>
+                            <option value="percentage">Percentage</option>
+                            <option value="fixed">Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Expiry From</label>
+                        <input type="date" id="fromDate" class="form-control">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Expiry To</label>
+                        <input type="date" id="toDate" class="form-control">
+                    </div>
+                    <div class="col-md-1">
+                        <button id="resetFilters" class="btn btn-secondary w-100">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupons Table -->
+        <div class="card stretch stretch-full">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Discount</th>
+                                <th>Min. Order</th>
+                                <th>Uses (used/limit)</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="couponsTableBody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap">
+                    <div id="entriesInfo" class="text-muted small"></div>
+                    <nav>
+                        <ul class="pagination mb-0" id="paginationControls"></ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<style>
+    .status-switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+    .status-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .3s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+    .action-icons i {
+        font-size: 18px;
+        margin: 0 4px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .action-icons i:hover {
+        transform: scale(1.1);
+    }
+    .badge.bg-soft-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .badge.bg-soft-primary {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    .badge.bg-soft-warning {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .discount-badge {
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    // ---------- MOCK COUPONS DATA ----------
+    let couponsData = [
+        { id: 1, code: "SAVE10", description: "10% off on all orders", discount_type: "percentage", discount_value: 10, min_order: 50, usage_limit: 100, used_count: 45, expiry_date: "2025-12-31", status: "active" },
+        { id: 2, code: "FLAT20", description: "$20 off on orders above $100", discount_type: "fixed", discount_value: 20, min_order: 100, usage_limit: 50, used_count: 32, expiry_date: "2025-10-15", status: "active" },
+        { id: 3, code: "WELCOME", description: "Welcome coupon for new users", discount_type: "percentage", discount_value: 15, min_order: 0, usage_limit: 200, used_count: 189, expiry_date: "2025-06-30", status: "active" },
+        { id: 4, code: "FREESHIP", description: "Free shipping (fixed $5 off)", discount_type: "fixed", discount_value: 5, min_order: 30, usage_limit: 500, used_count: 312, expiry_date: "2025-05-01", status: "expired" },
+        { id: 5, code: "SUMMER25", description: "25% off summer collection", discount_type: "percentage", discount_value: 25, min_order: 150, usage_limit: 30, used_count: 30, expiry_date: "2025-08-20", status: "inactive" },
+        { id: 6, code: "FLASH50", description: "50% flash sale", discount_type: "percentage", discount_value: 50, min_order: 200, usage_limit: 10, used_count: 10, expiry_date: "2025-04-10", status: "expired" },
+        { id: 7, code: "LOYALTY", description: "Loyalty reward $15 off", discount_type: "fixed", discount_value: 15, min_order: 75, usage_limit: 0, used_count: 0, expiry_date: "2025-12-31", status: "active" },
+        { id: 8, code: "WEEKEND", description: "Weekend special 12% off", discount_type: "percentage", discount_value: 12, min_order: 40, usage_limit: 80, used_count: 23, expiry_date: "2025-07-19", status: "active" },
+        { id: 9, code: "NEWYEAR", description: "New Year 30% off", discount_type: "percentage", discount_value: 30, min_order: 100, usage_limit: 200, used_count: 145, expiry_date: "2025-01-31", status: "expired" },
+        { id: 10, code: "BIGSAVE", description: "$100 off on orders $500+", discount_type: "fixed", discount_value: 100, min_order: 500, usage_limit: 5, used_count: 2, expiry_date: "2025-09-15", status: "active" },
+        { id: 11, code: "FALL15", description: "Autumn 15% discount", discount_type: "percentage", discount_value: 15, min_order: 60, usage_limit: 150, used_count: 67, expiry_date: "2025-11-30", status: "active" },
+        { id: 12, code: "TESTCODE", description: "Test coupon", discount_type: "fixed", discount_value: 5, min_order: 10, usage_limit: 1, used_count: 0, expiry_date: "2025-12-01", status: "inactive" }
+    ];
+
+    let filteredCoupons = [...couponsData];
+    let currentPage = 1;
+    const perPage = 10;
+
+    // DOM elements
+    const tbody = document.getElementById('couponsTableBody');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const typeFilter = document.getElementById('typeFilter');
+    const fromDate = document.getElementById('fromDate');
+    const toDate = document.getElementById('toDate');
+    const resetBtn = document.getElementById('resetFilters');
+    const searchBtn = document.getElementById('searchBtn');
+    const entriesInfo = document.getElementById('entriesInfo');
+    const paginationControls = document.getElementById('paginationControls');
+
+    // Helper: update stats cards
+    function updateStats() {
+        const total = couponsData.length;
+        const active = couponsData.filter(c => c.status === 'active').length;
+        const expired = couponsData.filter(c => c.status === 'expired').length;
+        const totalUses = couponsData.reduce((sum, c) => sum + c.used_count, 0);
+        document.getElementById('totalCoupons').innerText = total;
+        document.getElementById('activeCoupons').innerText = active;
+        document.getElementById('expiredCoupons').innerText = expired;
+        document.getElementById('totalUses').innerText = totalUses;
+    }
+
+    // Apply filters
+    function applyFilters() {
+        let result = [...couponsData];
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        if (searchTerm) {
+            result = result.filter(c => c.code.toLowerCase().includes(searchTerm) || c.description.toLowerCase().includes(searchTerm));
+        }
+        const statusVal = statusFilter.value;
+        if (statusVal !== 'all') result = result.filter(c => c.status === statusVal);
+        const typeVal = typeFilter.value;
+        if (typeVal !== 'all') result = result.filter(c => c.discount_type === typeVal);
+        const from = fromDate.value ? new Date(fromDate.value) : null;
+        if (from) result = result.filter(c => new Date(c.expiry_date) >= from);
+        const to = toDate.value ? new Date(toDate.value) : null;
+        if (to) result = result.filter(c => new Date(c.expiry_date) <= to);
+        filteredCoupons = result;
+        currentPage = 1;
+        renderTable();
+    }
+
+    function getStatusBadgeClass(status) {
+        switch(status) {
+            case 'active': return 'bg-success text-white';
+            case 'inactive': return 'bg-secondary text-white';
+            case 'expired': return 'bg-danger text-white';
+            default: return 'bg-secondary';
+        }
+    }
+
+    function formatDiscount(coupon) {
+        if (coupon.discount_type === 'percentage') {
+            return `${coupon.discount_value}%`;
+        } else {
+            return `$${coupon.discount_value.toFixed(2)}`;
+        }
+    }
+
+    function renderTable() {
+        const start = (currentPage - 1) * perPage;
+        const end = start + perPage;
+        const pageCoupons = filteredCoupons.slice(start, end);
+        tbody.innerHTML = '';
+        if (pageCoupons.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4">No coupons found</td></tr>';
+        } else {
+            pageCoupons.forEach((coupon, idx) => {
+                const srNo = start + idx + 1;
+                const isActive = coupon.status === 'active';
+                const badgeClass = getStatusBadgeClass(coupon.status);
+                const discountDisplay = formatDiscount(coupon);
+                const usageText = coupon.usage_limit === 0 ? `${coupon.used_count} / ∞` : `${coupon.used_count} / ${coupon.usage_limit}`;
+                const row = `
+                    <tr>
+                        <td>${srNo}</td>
+                        <td class="fw-semibold">${coupon.code}</td>
+                        <td>${coupon.description}</td>
+                        <td><span class="badge bg-info text-dark discount-badge">${discountDisplay}</span></td>
+                        <td>$${coupon.min_order.toFixed(2)}</td>
+                        <td>${usageText}</td>
+                        <td>${coupon.expiry_date}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="status-switch">
+                                    <input type="checkbox" class="status-toggle" data-id="${coupon.id}" ${isActive ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="badge ${badgeClass} px-3 py-1">${coupon.status}</span>
+                            </div>
+                        </td>
+                        <td class="action-icons">
+                            <i class="feather-edit text-primary edit-coupon" data-id="${coupon.id}" title="Edit"></i>
+                            <i class="feather-trash-2 text-danger delete-coupon" data-id="${coupon.id}" title="Delete"></i>
+                            <i class="feather-eye text-info view-coupon" data-id="${coupon.id}" title="View"></i>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        // Pagination info
+        const totalPages = Math.ceil(filteredCoupons.length / perPage);
+        const startEntry = filteredCoupons.length === 0 ? 0 : start + 1;
+        const endEntry = Math.min(end, filteredCoupons.length);
+        entriesInfo.innerText = `Showing ${startEntry} to ${endEntry} of ${filteredCoupons.length} coupons`;
+        paginationControls.innerHTML = '';
+        if (totalPages > 1) {
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>`;
+            if (currentPage !== 1) prevLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage--; renderTable(); attachDynamicEvents(); });
+            paginationControls.appendChild(prevLi);
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage = i; renderTable(); attachDynamicEvents(); });
+                paginationControls.appendChild(li);
+            }
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>`;
+            if (currentPage !== totalPages) nextLi.querySelector('a').addEventListener('click', (e) => { e.preventDefault(); currentPage++; renderTable(); attachDynamicEvents(); });
+            paginationControls.appendChild(nextLi);
+        }
+        attachDynamicEvents();
+    }
+
+    function handleStatusToggle(e) {
+        const id = parseInt(e.target.getAttribute('data-id'));
+        const isChecked = e.target.checked;
+        const newStatus = isChecked ? 'active' : 'inactive';
+        const coupon = couponsData.find(c => c.id === id);
+        if (!coupon) return;
+        // Simulate API call
+        fetch('/api/coupons/status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, status: newStatus })
+        }).catch(() => {});
+        coupon.status = newStatus;
+        // If expiry date is in past, force status to expired? Not needed for demo.
+        updateStats();
+        applyFilters();
+    }
+
+    function handleEdit(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        alert(`✏️ Edit coupon ID: ${id}\nImplement edit modal or page.`);
+    }
+    function handleDelete(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        if (confirm('Delete this coupon permanently?')) {
+            const index = couponsData.findIndex(c => c.id === id);
+            if (index !== -1) {
+                couponsData.splice(index, 1);
+                updateStats();
+                applyFilters();
+            }
+        }
+    }
+    function handleView(e) {
+        const id = parseInt(e.currentTarget.getAttribute('data-id'));
+        const coupon = couponsData.find(c => c.id === id);
+        if (coupon) {
+            alert(`📄 Coupon Details:\nCode: ${coupon.code}\nDescription: ${coupon.description}\nDiscount: ${coupon.discount_type === 'percentage' ? coupon.discount_value+'%' : '$'+coupon.discount_value}\nMin Order: $${coupon.min_order}\nUsage: ${coupon.used_count}/${coupon.usage_limit === 0 ? '∞' : coupon.usage_limit}\nExpiry: ${coupon.expiry_date}\nStatus: ${coupon.status}`);
+        } else {
+            alert('Coupon not found');
+        }
+    }
+
+    function attachDynamicEvents() {
+        document.querySelectorAll('.status-toggle').forEach(toggle => {
+            toggle.removeEventListener('change', handleStatusToggle);
+            toggle.addEventListener('change', handleStatusToggle);
+        });
+        document.querySelectorAll('.edit-coupon').forEach(btn => {
+            btn.removeEventListener('click', handleEdit);
+            btn.addEventListener('click', handleEdit);
+        });
+        document.querySelectorAll('.delete-coupon').forEach(btn => {
+            btn.removeEventListener('click', handleDelete);
+            btn.addEventListener('click', handleDelete);
+        });
+        document.querySelectorAll('.view-coupon').forEach(btn => {
+            btn.removeEventListener('click', handleView);
+            btn.addEventListener('click', handleView);
+        });
+    }
+
+    function resetFilters() {
+        searchInput.value = '';
+        statusFilter.value = 'all';
+        typeFilter.value = 'all';
+        fromDate.value = '';
+        toDate.value = '';
+        applyFilters();
+    }
+
+    // Add coupon demo
+    document.getElementById('addCouponBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const newId = couponsData.length + 1;
+        const newCoupon = {
+            id: newId,
+            code: `NEWCODE${newId}`,
+            description: "New discount coupon",
+            discount_type: "percentage",
+            discount_value: 10,
+            min_order: 0,
+            usage_limit: 50,
+            used_count: 0,
+            expiry_date: new Date(new Date().setMonth(new Date().getMonth() + 3)).toISOString().slice(0,10),
+            status: "active"
+        };
+        couponsData.push(newCoupon);
+        updateStats();
+        applyFilters();
+        alert("Demo: New coupon added (active).");
+    });
+
+    // Event listeners
+    searchBtn.addEventListener('click', applyFilters);
+    searchInput.addEventListener('keyup', (e) => { if (e.key === 'Enter') applyFilters(); });
+    statusFilter.addEventListener('change', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    fromDate.addEventListener('change', applyFilters);
+    toDate.addEventListener('change', applyFilters);
+    resetBtn.addEventListener('click', resetFilters);
+
+    // Initial load
+    updateStats();
+    applyFilters();
+</script>
+
+<%- include('layout/footer') %>

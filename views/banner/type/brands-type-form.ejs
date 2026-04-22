@@ -1,0 +1,148 @@
+<style>
+.image-preview {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #dcdcdc;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  position: relative;
+  margin-top: 25px;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  display: none;
+}
+
+.image-preview span {
+  color: #9aa5b1;
+  font-size: 14px;
+}
+
+.required {
+  color: red;
+}
+
+.hint {
+  color: #17a2b8;
+}
+
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn.reset {
+  background: #f1f1f1;
+  margin-right: 10px;
+}
+
+.btn.submit {
+  background: #007bff;
+  color: #fff;
+}
+
+</style>
+
+<div class="row">
+  <div class="col-12">
+    <h4 class="card-title">Brand Type Setup</h4>
+
+    <div class="card">
+      <div class="card-body">
+
+        <form onsubmit="submitCategory(event)">
+          <div class="row align-items-end">
+
+            <!-- Sub Category Name -->
+            <div class="col-md-5">
+              <label>
+                Brand Type Name <span class="required">*</span> (EN)
+              </label>
+              <input
+                type="text"
+                id="categoryName"
+                name="name"
+                placeholder="New Category"
+                class="form-control"
+              >
+            </div>
+
+            <!-- Buttons -->
+            <div class="col-md-2 text-right">
+              <button type="reset" class="btn reset">Reset</button>
+              <button type="submit" class="btn submit">Submit</button>
+            </div>
+
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  const logoInput = document.getElementById('categoryLogo');
+  const previewImg = document.getElementById('previewImg');
+  const previewText = document.getElementById('previewText');
+
+  logoInput.addEventListener('change', function () {
+    const file = this.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+        previewText.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewImg.style.display = 'none';
+      previewText.style.display = 'block';
+    }
+  });
+</script>
+
+
+<script>
+function submitCategory(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('categoryName').value.trim();
+
+  if (!name) {
+    alert("Sub category name required");
+    return;
+  }
+
+  fetch('/prodsite/store/brand-type', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: name
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message);
+    location.reload();
+  })
+  .catch(err => {
+    console.error(err);
+    alert("Server error");
+  });
+}
+</script>
+

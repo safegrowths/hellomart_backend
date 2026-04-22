@@ -1,5 +1,6 @@
 const db = require('../db');
 const {all_banner_list } = require('../models/admin');
+const multer = require('multer');
 
 exports.homePage = (req, res) => {
     res.render('login');
@@ -89,83 +90,133 @@ exports.subcategorisePage = (req, res) => {
         currentPage: 'subcategorise'
     });
 };
+// Configure multer for image upload
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'public/uploads/categories/'),
+    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage }).single('image');
+
+// Helper function to run queries
+const runQuery = (sql, params) => db.promise().execute(sql, params);
+
+// 1. List categories (GET)
+exports.categoryPage = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let offset = (page - 1) * limit;
+
+        let whereClause = "";
+        let queryParams = [];
+        if (search) {
+            whereClause = "WHERE title LIKE ?";
+            queryParams.push(`%${search}%`);
+        }
+
+        // Get total count
+        const [countResult] = await runQuery(`SELECT COUNT(*) as total FROM categorise ${whereClause}`, queryParams);
+        const totalRecords = countResult[0].total;
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        // Get paginated data
+        const sql = `SELECT id, title, image, status, type, created_at, updated_at FROM categorise ${whereClause} ORDER BY id DESC LIMIT ? OFFSET ?`;
+        const [rows] = await runQuery(sql, [...queryParams, limit, offset]);
+
+        res.render('category/list', {
+            data: rows,
+            currentPage: page,
+            totalPages,
+            search,
+            pageName: 'Category'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+};
+
+// 2. Get single category (for edit modal)
+exports.getCategoryById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const [rows] = await runQuery('SELECT id, title, image, type, status FROM categorise WHERE id = ?', [id]);
+        if (rows.length) {
+            res.json({ success: true, data: rows[0] });
+        } else {
+            res.json({ success: false, message: 'Category not found' });
+        }
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// 3. Add category (POST)
 exports.addCategory = async (req, res) => {
-  try {
-    const { title, image, status, type } = req.body;
-    if (!title) {
-      return res.json({ status: false, msg: "Title required" });
-    }
-    const sql = `INSERT INTO categorise (title, image, status, type, created_at) VALUES (?, ?, ?, ?, NOW())`;
-    await db.query(sql, [title, image || '', status || 1, type || 1]);
-    res.json({ status: true, msg: "Category added successfully" });
-  } catch (err) {
-    res.status(500).json({ status: false, msg: err.message });
-  }
-};
+    upload(req, res, async (err) => {
+        if (err) return res.json({ success: false, message: err.message });
+        try {
+            const { title, type, status } = req.body;
+            if (!title) return res.json({ success: false, message: 'Title is required' });
+            let image = null;
+            if (req.file) image = '/uploads/categories/' + req.file.filename;
 
-exports.getCategories= async (req, res) => {
-  try {
-    const { status, type } = req.query;
-
-    let sql = `SELECT * FROM categorise WHERE 1`;
-    let params = [];
-
-    if (status !== undefined) {
-      sql += ` AND status = ?`;
-      params.push(status);
-    }
-
-    if (type) {
-      sql += ` AND type = ?`;
-      params.push(type);
-    }
-
-    sql += ` ORDER BY id DESC`;
-
-    const [rows] = await db.query(sql, params);
-
-    res.json({
-      status: true,
-      data: rows
+            await runQuery(
+                'INSERT INTO categorise (title, image, type, status, created_at) VALUES (?, ?, ?, ?, NOW())',
+                [title, image, type, status]
+            );
+            res.json({ success: true, message: 'Category added successfully' });
+        } catch (error) {
+            res.json({ success: false, message: error.message });
+        }
     });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
-exports.toggleCategory = async (req, res) => {
-  try {
-    const { id } = req.body;
 
-    await db.query(`
-      UPDATE categorise 
-      SET status = IF(status = 1, 0, 1)
-      WHERE id = ?
-    `, [id]);
+// 4. Update category (POST)
+exports.updateCategory = async (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) return res.json({ success: false, message: err.message });
+        try {
+            const { id, title, type, status, existing_image } = req.body;
+            if (!id || !title) return res.json({ success: false, message: 'Missing data' });
 
-    res.json({
-      status: true,
-      msg: "Status updated"
+            let image = existing_image;
+            if (req.file) image = '/uploads/categories/' + req.file.filename;
+
+            await runQuery(
+                'UPDATE categorise SET title = ?, image = ?, type = ?, status = ?, updated_at = NOW() WHERE id = ?',
+                [title, image, type, status, id]
+            );
+            res.json({ success: true, message: 'Category updated' });
+        } catch (error) {
+            res.json({ success: false, message: error.message });
+        }
     });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
+
+// 5. Delete category (POST)
 exports.deleteCategory = async (req, res) => {
-  try {
-    const { id } = req.body;
+    try {
+        const { id } = req.body;
+        if (!id) return res.json({ success: false, message: 'ID required' });
+        await runQuery('DELETE FROM categorise WHERE id = ?', [id]);
+        res.json({ success: true, message: 'Category deleted' });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
+};
 
-    await db.query(`DELETE FROM categorise WHERE id = ?`, [id]);
-
-    res.json({
-      status: true,
-      msg: "Deleted successfully"
-    });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// 6. Toggle status (POST)
+exports.toggleStatus = async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        if (!id || !status) return res.json({ success: false, message: 'Missing data' });
+        await runQuery('UPDATE categorise SET status = ? WHERE id = ?', [status, id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, message: error.message });
+    }
 };
 
 exports.settingsPage = (req, res) => {

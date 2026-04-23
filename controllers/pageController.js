@@ -68,111 +68,13 @@ exports.dashboardPage = (req, res) => {
     });
 };
 
-exports.usersPage = async (req, res) => {
-    try {
-        const db = req.app.get('db'); // assumes you set app.set('db', pool) in app.js
-
-        // ── 1. All users ──────────────────────────────────────────────────────
-        const [users] = await db.promise().query(`
-            SELECT id, name, image, mobile, amount, email,
-                   business_name, upload_shop_logo, created_at
-            FROM users
-            ORDER BY created_at DESC
-        `);
-
-        // ── 2. All orders ─────────────────────────────────────────────────────
-        const [orders] = await db.promise().query(`
-            SELECT id, uniqueorder_id, user_id, bag_mrp, bag_discount,
-                   coupon_discount, shipping_fee, grand_total,
-                   status, payment_type, gateway_id, created_at
-            FROM orders
-            ORDER BY created_at DESC
-        `);
-
-        // ── 3. All order items ────────────────────────────────────────────────
-        const [orderItems] = await db.promise().query(`
-            SELECT id, order_id, uniqueorder_id, product_id,
-                   quantity, price, mrp, status, product_attribute_id
-            FROM order_items
-        `);
-
-        // ── 4. Aggregate: map orders → user, items → order ───────────────────
-
-        // Map order_id → items[]
-        const itemsByOrder = {};
-        orderItems.forEach(item => {
-            if (!itemsByOrder[item.order_id]) itemsByOrder[item.order_id] = [];
-            itemsByOrder[item.order_id].push(item);
-        });
-
-        // Map user_id → orders[]  (with items embedded)
-        const ordersByUser = {};
-        orders.forEach(order => {
-            order.items = itemsByOrder[order.id] || [];
-            if (!ordersByUser[order.user_id]) ordersByUser[order.user_id] = [];
-            ordersByUser[order.user_id].push(order);
-        });
-
-        // Attach aggregated data to each user
-        const enrichedUsers = users.map(user => {
-            const userOrders = ordersByUser[user.id] || [];
-            const totalOrdersCount  = userOrders.length;
-            const totalSpent        = userOrders.reduce((s, o) => s + parseFloat(o.grand_total || 0), 0);
-            const totalItemsOrdered = userOrders.reduce((s, o) => s + o.items.length, 0);
-
-            return {
-                ...user,
-                orders: userOrders,
-                totalOrdersCount,
-                totalSpent: totalSpent.toFixed(2),
-                totalItemsOrdered,
-                // status flag: treat amount==0 && no orders as inactive (adjust as needed)
-                isActive: true
-            };
-        });
-
-        // ── 5. Dashboard summary stats ────────────────────────────────────────
-        const stats = {
-            totalUsers:   users.length,
-            activeUsers:  enrichedUsers.filter(u => u.isActive).length,
-            blockedUsers: enrichedUsers.filter(u => !u.isActive).length,
-            totalRevenue: orders.reduce((s, o) => s + parseFloat(o.grand_total || 0), 0).toFixed(2),
-            totalOrders:  orders.length
-        };
-
-        res.render('users', {
-            title: 'Users',
-            showNavigation: true,
-            currentPage: 'users',
-            users: enrichedUsers,
-            stats,
-            orders   // for chart / recent orders section
-        });
-
-    } catch (err) {
-        console.error('usersPage error:', err);
-        res.status(500).send('Database error: ' + err.message);
-    }
+exports.usersPage = (req, res) => {
+    res.render('users', { 
+        title: 'Users',
+        showNavigation: true,
+        currentPage: 'users'
+    });
 };
-
-
-// ── AJAX: toggle block/unblock (optional endpoint) ────────────────────────────
-exports.toggleUserStatus = async (req, res) => {
-    try {
-        const db  = req.app.get('db');
-        const { userId, status } = req.body; // status: 'active' | 'blocked'
-        // Add a `status` column to your users table if not present:
-        // ALTER TABLE users ADD COLUMN status ENUM('active','blocked') DEFAULT 'active';
-        await db.promise().query(
-            `UPDATE users SET status = ? WHERE id = ?`,
-            [status, userId]
-        );
-        res.json({ success: true });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
 
 exports.categorisePage = (req, res) => {
     res.render('categorise', { 

@@ -7,13 +7,13 @@ router.get('/', pageController.homePage);
 router.get('/about', pageController.aboutPage);
 router.get('/dashboard', pageController.dashboardPage);
 router.get('/users', pageController.usersPage);
-router.get('/users_toggleUserStatus', pageController.toggleUserStatus);
+
 router.get('/categoriess', pageController.categorisePage);
 router.get('/subcategories', pageController.subcategorisePage);
 router.get('/settings', pageController.settingsPage);
 router.get('/product-attributes', pageController.getProductAttributes);
 // ✅ Add Category
-router.post('/add-category', pageController.addCategory);
+
 router.get('/coupon', pageController.couponForm);
 router.get('/categorisee', pageController.categoriseForm);
 
@@ -24,7 +24,7 @@ router.get('/category_view', pageController.categoryview);
 
 
 // ✅ Delete Category
-router.post('/delete-category', pageController.deleteCategory);
+
 router.get('/banner-list', pageController.bannerPage);
 router.get('/orders-add', pageController.showAddOrderForm);
 router.post('/orders-create', pageController.createOrder);

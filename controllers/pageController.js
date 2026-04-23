@@ -170,20 +170,16 @@ exports.usersview = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        // ✅ Total count
         const [[countResult]] = await db.query(
             `SELECT COUNT(*) as total FROM users 
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
             [`%${search}%`, `%${search}%`, `%${search}%`]
         );
 
-        const totalRecords = countResult.total;
-        const totalPages = Math.ceil(totalRecords / limit);
+        const totalPages = Math.ceil(countResult.total / limit);
 
-        // ✅ Simple users list (ONLY users table)
         const [users] = await db.query(
-            `SELECT id, name, image, created_at, mobile, email, 
-                    business_name, upload_shop_logo, shop_doc, token
+            `SELECT id, name, image, created_at, mobile, email
              FROM users
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
              ORDER BY id DESC
@@ -196,15 +192,15 @@ exports.usersview = async (req, res) => {
             currentPage: page,
             totalPages,
             limit,
-            search,
-            pageName: 'Users'
+            search
         });
 
     } catch (error) {
-        console.error("Error in usersview:", error);
-        res.status(500).send("Server Error");
+        console.error(error);
+        res.status(500).send(error.message);
     }
 };
+
 // Show List Categories page (HTML)
 exports.showListPage = (req, res) => {
   res.render('list', {

@@ -188,6 +188,9 @@ exports.usersview = async (req, res) => {
         //     [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
         // );
 
+        const users =[];
+        const totalPages=[];
+
         res.render('users/list', {
             data: users || [],
             currentPage: page || '',

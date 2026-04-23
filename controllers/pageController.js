@@ -23,7 +23,7 @@ exports.subcategoryview = async (req, res) => {
         // categories dropdown ke liye
         const [categories] = await db.query(`SELECT id, title FROM categorise WHERE status=1`);
 
-        res.render('subcategory/list', {
+        res.render('subcategorise', {
             title: 'Subcategory List',
             subcategories,
             categories,

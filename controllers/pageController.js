@@ -380,9 +380,10 @@ exports.users_view = async (req, res) => {
     }
 };
 
+// Helper to fetch paginated categories (including 'type')
 const all_category_list = async (search, limit, offset) => {
     const sql = `
-        SELECT id, title AS name, image, status, created_at, updated_at
+        SELECT id, title AS name, image, status, type, created_at, updated_at
         FROM categorise
         WHERE title LIKE ?
         ORDER BY id DESC
@@ -392,6 +393,7 @@ const all_category_list = async (search, limit, offset) => {
     return rows;
 };
 
+// List view (unchanged but now passes type in categories)
 exports.categoryview = async (req, res) => {
     try {
         const search = req.query.search || "";
@@ -400,26 +402,68 @@ exports.categoryview = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        // Get categories for current page
         const categories = await all_category_list(search, limit, offset);
-
-        // Get total count for pagination
         const countQuery = `SELECT COUNT(*) as total FROM categorise WHERE title LIKE ?`;
         const [[{ total }]] = await db.query(countQuery, [`%${search}%`]);
         const totalPages = Math.ceil(total / limit);
 
-        // Render the view
         res.render('category/list', {
             title: 'Category List',
-            categories: categories,
+            categories,
             currentPage: page,
-            totalPages: totalPages,
-            search: search,
+            totalPages,
+            search,
             pageName: 'Category'
         });
     } catch (error) {
         console.error(error);
         res.status(500).render('error', { message: 'Failed to load categories' });
+    }
+};
+
+// Add new category
+exports.addCategory = async (req, res) => {
+    try {
+        const { name, image, status, type } = req.body;
+        if (!name) {
+            return res.status(400).json({ success: false, message: 'Category name is required' });
+        }
+        const sql = `INSERT INTO categorise (title, image, status, type, created_at, updated_at) 
+                     VALUES (?, ?, ?, ?, NOW(), NOW())`;
+        await db.query(sql, [name, image || '', status || 1, type || 1]);
+        res.json({ success: true, message: 'Category added successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Database error' });
+    }
+};
+
+// Update category
+exports.updateCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, image, status, type } = req.body;
+        const sql = `UPDATE categorise 
+                     SET title = ?, image = ?, status = ?, type = ?, updated_at = NOW() 
+                     WHERE id = ?`;
+        await db.query(sql, [name, image || '', status, type, id]);
+        res.json({ success: true, message: 'Category updated successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Update failed' });
+    }
+};
+
+// Delete category
+exports.deleteCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sql = `DELETE FROM categorise WHERE id = ?`;
+        await db.query(sql, [id]);
+        res.json({ success: true, message: 'Category deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Delete failed' });
     }
 };
 

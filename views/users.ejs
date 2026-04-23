@@ -1,6 +1,64 @@
 <%- include('../layout/header') %>
 <%- include('../layout/sidebar') %>
 
+<div class="content-body">
+<div class="container-fluid">
 
+<h4>Users List</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Image</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <% if (data && data.length > 0) { %>
+            <% data.forEach((u, i) => { %>
+                <tr>
+                    <td><%= ((currentPage - 1) * limit) + i + 1 %></td>
+                    <td><%= u.name %></td>
+                    <td><%= u.mobile %></td>
+                    <td><%= u.email %></td>
+
+                    <td>
+                        <img src="<%= u.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
+                             width="40">
+                    </td>
+
+                    <td>
+                        <%= u.created_at ? new Date(u.created_at).toLocaleDateString() : '-' %>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="6" class="text-center">No Data Found</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<!-- Pagination -->
+<div>
+    <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a>
+    <% } %>
+
+    <span> Page <%= currentPage %> / <%= totalPages %> </span>
+
+    <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
+    <% } %>
+</div>
+
+</div>
+</div>
 
 <%- include('../layout/footer') %>

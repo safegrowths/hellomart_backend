@@ -171,7 +171,7 @@ exports.showListPage = (req, res) => {
   });
 };
 
-exports.users_view = async (req, res) => {
+exports.usersview = async (req, res) => {
     try {
         const search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;

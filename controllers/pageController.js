@@ -213,50 +213,6 @@ exports.categoryview = async (req, res) => {
         res.status(500).render('error', { message: 'Failed to load categories' });
     }
 };
-exports.usersview = async (req, res) => {
-    try {
-        const search = req.query.search || "";
-        let page = parseInt(req.query.page) || 1;
-
-        if (isNaN(page) || page < 1) page = 1;
-
-        const limit = 10;
-        const offset = (page - 1) * limit;
-
-        // ✅ Get Users List
-        const [users] = await db.query(
-            `SELECT id, name, image, created_at, mobile, email
-             FROM users
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
-             ORDER BY id DESC
-             LIMIT ? OFFSET ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
-        );
-
-        // ✅ Total Count
-        const [[countResult]] = await db.query(
-            `SELECT COUNT(*) as total FROM users
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`]
-        );
-
-        const totalRecords = countResult.total;
-        const totalPages = Math.ceil(totalRecords / limit);
-
-        res.render('users', {
-            data: users,
-            currentPage: page,
-            totalPages,
-            search,
-            limit,
-            pageName: 'Users'
-        });
-
-    } catch (error) {
-        console.error("❌ ERROR in usersview:", error);
-        res.status(500).send(error.message);
-    }
-};
 
 exports.bannerPage = async (req, res) => {
     try {

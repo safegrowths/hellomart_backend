@@ -7,7 +7,7 @@ router.get('/', pageController.homePage);
 router.get('/about', pageController.aboutPage);
 router.get('/dashboard', pageController.dashboardPage);
 router.get('/users', pageController.usersPage);
-router.get('/users', pageController.usersPage);
+router.get('/users_toggleUserStatus', pageController.toggleUserStatus);
 router.get('/categoriess', pageController.categorisePage);
 router.get('/subcategories', pageController.subcategorisePage);
 router.get('/settings', pageController.settingsPage);

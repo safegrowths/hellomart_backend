@@ -1,0 +1,323 @@
+<style>
+/* =========================
+   FORM STYLES
+========================= */
+.form-label {
+  font-weight: 500;
+}
+
+.upload-box {
+  border: 2px dashed #dcdcdc;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  background: #f8fafc;
+  position: relative;
+  cursor: pointer;
+  min-height: 150px;
+}
+
+.upload-box input {
+  display: none;
+}
+
+.upload-box img {
+  max-width: 100%;
+  max-height: 130px;
+  display: none;
+  border-radius: 6px;
+}
+
+.upload-box span {
+  color: #9aa5b1;
+  font-size: 14px;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  display: none;
+  cursor: pointer;
+}
+
+.multi-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.multi-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+}
+
+.multi-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.multi-item button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 12px;
+  cursor: pointer;
+}
+</style>
+
+<div class="card">
+  <div class="card-body">
+    <h4 class="card-title mb-4">Brand Setup</h4>
+
+    <form id="brandForm">
+      <div class="row">
+
+        <!-- Brand Name -->
+        <div class="col-md-3">
+          <label class="form-label">
+            Brand Name (EN) <span class="required">*</span>
+          </label>
+          <input type="text" class="form-control" placeholder="Enter brand name" name="brand_name">
+        </div>
+
+        <!-- Brand Type -->
+        <div class="col-md-3">
+          <label class="form-label">
+            Brand Type <span class="required">*</span>
+          </label>
+          <select class="form-control" name="brand_type_id">
+            <option value="">Select Brand Type</option>
+            <% brand_type_list.forEach(function(n){ %>
+              <option value="<%= n.id %>"><%= n.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Is Discount</label>
+            <select class="form-control" name="is_discount">
+              <option value="">Select</option>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+        
+         <div class="col-md-2">
+          <label class="form-label">
+            Brand Discount<span class="required">*</span>
+          </label>
+          <input type="text" class="form-control" placeholder="Enter brand Discount" name="brand_discount">
+        </div>
+        
+        <div class="col-md-2">
+            <label class="form-label">Discount Type</label>
+            <select class="form-control" name="discount_type">
+              <option value="">Select Discount Type</option>
+              <option value="1">Flat (₹)</option>
+              <option value="2">Percentage (%)</option>
+            </select>
+          </div>
+
+      </div>
+
+      <hr class="my-4">
+
+      <div class="row">
+
+        <!-- Brand Logo -->
+        <div class="col-md-4">
+          <label class="form-label">Brand Logo <span class="required">*</span></label>
+          <div class="upload-box" onclick="triggerInput('logoInput')">
+            <img id="logoPreview">
+            <span id="logoText">Click to upload logo</span>
+            <button class="remove-btn" type="button">×</button>
+            <input type="file" id="logoInput" accept="image/*">
+          </div>
+        </div>
+
+        <!-- Front Banner -->
+        <div class="col-md-4">
+          <label class="form-label">Front Banner <span class="required">*</span></label>
+          <div class="upload-box" onclick="triggerInput('frontInput')">
+            <img id="frontPreview">
+            <span id="frontText">Click to upload front banner</span>
+            <button class="remove-btn" type="button">×</button>
+            <input type="file" id="frontInput" accept="image/*">
+          </div>
+        </div>
+
+        <!-- Multiple Banners -->
+        <div class="col-md-4">
+          <label class="form-label">Extra Banners</label>
+          <div class="upload-box" onclick="triggerInput('multiInput')">
+            <span>Click to upload multiple banners</span>
+            <input type="file" id="multiInput" accept="image/*" multiple>
+          </div>
+
+          <div class="multi-preview" id="multiPreview"></div>
+        </div>
+
+      </div>
+
+      <input type="hidden" id="logoBase64">
+      <input type="hidden" id="frontBase64">
+      <input type="hidden" id="extraBase64">
+        
+      <div class="text-right mt-4">
+        <button type="reset" class="btn btn-secondary mr-2">Reset</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+let extraImages = [];
+
+/* =========================
+   TRIGGER FILE INPUT
+========================= */
+function triggerInput(id) {
+  document.getElementById(id).click();
+}
+
+/* =========================
+   SINGLE IMAGE INIT
+========================= */
+function initSingle(inputId, imgId, textId, base64Id) {
+  const input = document.getElementById(inputId);
+  const img = document.getElementById(imgId);
+  const text = document.getElementById(textId);
+  const base64Input = document.getElementById(base64Id);
+  const removeBtn = img.parentElement.querySelector('.remove-btn');
+
+  input.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.src = reader.result;
+      img.style.display = 'block';
+      text.style.display = 'none';
+      removeBtn.style.display = 'block';
+      base64Input.value = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  removeBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    img.src = '';
+    img.style.display = 'none';
+    text.style.display = 'block';
+    removeBtn.style.display = 'none';
+    input.value = '';
+    base64Input.value = '';
+  });
+}
+
+/* =========================
+   MULTI IMAGE
+========================= */
+document.getElementById('multiInput').addEventListener('change', function () {
+  const files = Array.from(this.files);
+  extraImages = [];
+
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      extraImages.push(reader.result);
+      renderMultiPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+function renderMultiPreview() {
+  const preview = document.getElementById('multiPreview');
+  preview.innerHTML = '';
+
+  extraImages.forEach((img, index) => {
+    const div = document.createElement('div');
+    div.className = 'multi-item';
+    div.innerHTML = `
+      <img src="${img}">
+      <button type="button" onclick="removeMulti(${index})">×</button>
+    `;
+    preview.appendChild(div);
+  });
+
+  document.getElementById('extraBase64').value = JSON.stringify(extraImages);
+}
+
+function removeMulti(index) {
+  extraImages.splice(index, 1);
+  renderMultiPreview();
+}
+
+/* =========================
+   DISCOUNT TOGGLE
+========================= */
+document.querySelector('[name="is_discount"]').addEventListener('change', function() {
+  const show = this.value == "1";
+
+  document.querySelector('[name="brand_discount"]').closest('.col-md-2').style.display = show ? 'block' : 'none';
+  document.querySelector('[name="discount_type"]').closest('.col-md-2').style.display = show ? 'block' : 'none';
+});
+
+/* =========================
+   FORM SUBMIT
+========================= */
+document.getElementById('brandForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const payload = {
+    brand_name: document.querySelector('[name="brand_name"]').value.trim(),
+    brand_type_id: document.querySelector('[name="brand_type_id"]').value,
+    is_discount: document.querySelector('[name="is_discount"]').value || 0,
+    brand_discount: document.querySelector('[name="brand_discount"]').value || 0,
+    discount_type: document.querySelector('[name="discount_type"]').value || null,
+    logo: document.getElementById('logoBase64').value,
+    front_banner: document.getElementById('frontBase64').value,
+    extra_banners: JSON.parse(document.getElementById('extraBase64').value || '[]')
+  };
+
+  fetch('/prodsite/brand/store', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(res => {
+    alert(res.message || 'Brand saved');
+    if (res.status) window.location.href = '/prodsite/brands/view';
+  })
+  .catch(() => alert('Something went wrong'));
+});
+
+/* =========================
+   INIT
+========================= */
+initSingle('logoInput', 'logoPreview', 'logoText', 'logoBase64');
+initSingle('frontInput', 'frontPreview', 'frontText', 'frontBase64');
+</script>

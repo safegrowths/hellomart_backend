@@ -171,29 +171,29 @@ exports.usersview = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        const [[countResult]] = await db.query(
-            `SELECT COUNT(*) as total FROM users 
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`]
-        );
+        // const [[countResult]] = await db.query(
+        //     `SELECT COUNT(*) as total FROM users 
+        //      WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
+        //     [`%${search}%`, `%${search}%`, `%${search}%`]
+        // );
 
-        const totalPages = Math.ceil(countResult.total / limit);
+        // const totalPages = Math.ceil(countResult.total / limit);
 
-        const [users] = await db.query(
-            `SELECT id, name, image, created_at, mobile, email
-             FROM users
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
-             ORDER BY id DESC
-             LIMIT ? OFFSET ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
-        );
+        // const [users] = await db.query(
+        //     `SELECT id, name, image, created_at, mobile, email
+        //      FROM users
+        //      WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
+        //      ORDER BY id DESC
+        //      LIMIT ? OFFSET ?`,
+        //     [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
+        // );
 
-        res.render('users', {
-            data: users,
-            currentPage: page,
-            totalPages,
-            limit,
-            search
+        res.render('users/list', {
+            data: users || [],
+            currentPage: page || '',
+            totalPages : totalPages || '',
+            limit: limit || '',
+            search : search || ''
         });
 
     } catch (error) {

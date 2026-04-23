@@ -61,10 +61,10 @@
                                                 <td><%= cat.created_at || '-' %></td>
                                                 <td><%= cat.updated_at || '-' %></td>
                                                 <td>
-                                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editCategory(<%= cat.id %>)">
+                                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editCategory()">
                                                         <i class="fas fa-pen"></i>
                                                     </button>
-                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<%= cat.id %>)">
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory()">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </td>

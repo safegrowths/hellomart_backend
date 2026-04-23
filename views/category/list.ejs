@@ -1,6 +1,5 @@
-<%- include('../layout/sidebar', { currentPage: 'categories' }) %>
 <%- include('../layout/header', { title: 'Category List' }) %>
-
+<%- include('../layout/sidebar', { currentPage: 'categories' }) %>
 
 <!-- Content body start -->
 <div class="content-body">
@@ -9,14 +8,16 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="row align-items-center mb-3">
-                            <div class="col-sm-8">
-                                <!-- Add Category Button - now on left side -->
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                                    <i class="fas fa-plus"></i> Add Category
-                                </button>
+                        <!-- Responsive row: button and search -->
+                        <div class="row align-items-center mb-3 g-2">
+                            <div class="col-md-6 col-sm-12 mb-2 mb-md-0">
+                                <div class="d-flex justify-content-start">
+                                    <button type="button" class="btn btn-primary btn-sm-mobile" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                        <i class="fas fa-plus"></i> Add Category
+                                    </button>
+                                </div>
                             </div>
-                            <div class="col-sm-4">
+                            <div class="col-md-6 col-sm-12">
                                 <%- include('../utils/searchbox', { 
                                     search: search || '', 
                                     action: '/category_view' 
@@ -258,7 +259,7 @@
             try {
                 const res = await fetch('/category_add', {
                     method: 'POST',
-                    body: formData   // no Content-Type header, browser sets it with boundary
+                    body: formData
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -332,7 +333,7 @@
 
             try {
                 const res = await fetch(`/category_edit/${id}`, {
-                    method: 'POST',   // using POST because PUT with FormData can be tricky; we'll handle in route
+                    method: 'POST',
                     body: formData
                 });
                 const result = await res.json();
@@ -410,5 +411,24 @@
     }
     .btn-primary:hover {
         background-color: #0b5ed7;
+    }
+    /* Fix for Add Category button – no cutoff, fully responsive */
+    .btn-sm-mobile {
+        white-space: nowrap;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+    }
+    @media (max-width: 576px) {
+        .btn-sm-mobile {
+            font-size: 0.8rem;
+            padding: 5px 10px;
+        }
+        .d-flex.justify-content-start {
+            justify-content: center !important;
+        }
+    }
+    .g-2 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
     }
 </style>

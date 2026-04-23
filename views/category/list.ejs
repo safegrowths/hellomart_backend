@@ -4,23 +4,21 @@
 <!-- Content body start -->
 <div class="content-body">
     <div class="container-fluid">
-        <!-- Add Category Button -->
-        <div class="row mb-3">
-            <div class="col-sm-12 text-end">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                    <i class="fas fa-plus"></i> Add Category
-                </button>
-            </div>
-        </div>
-
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
+                        <!-- Card header with title and Add button -->
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                            <h4 class="card-title mb-2 mb-sm-0">Category List</h4>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                <i class="fas fa-plus"></i> Add Category
+                            </button>
+                        </div>
+
+                        <!-- Search bar -->
                         <div class="row align-items-center mb-3">
-                            <div class="col-sm-8">
-                                <h4 class="card-title mb-0">Category List</h4>
-                            </div>
+                            <div class="col-sm-8"></div>
                             <div class="col-sm-4">
                                 <%- include('../utils/searchbox', { 
                                     search: search || '', 
@@ -95,6 +93,7 @@
                                 </tbody>
                             </table>
 
+                            <!-- Pagination -->
                             <%- include('../utils/pagination', { 
                                 currentPage: currentPage, 
                                 totalPages: totalPages, 
@@ -215,6 +214,9 @@
 
 <%- include('../layout/footer') %>
 
+<!-- Font Awesome fallback in case header doesn't include it -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <script>
     // Helper to reload current page (preserve search & pagination)
     function reloadPage() {
@@ -223,29 +225,33 @@
     }
 
     // ADD category
-    document.getElementById('saveCategoryBtn')?.addEventListener('click', async () => {
-        const form = document.getElementById('addCategoryForm');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
+    const saveBtn = document.getElementById('saveCategoryBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', async () => {
+            const form = document.getElementById('addCategoryForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
 
-        try {
-            const res = await fetch('/category_add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (result.success) {
-                bootstrap.Modal.getInstance(document.getElementById('addCategoryModal')).hide();
-                form.reset();
-                reloadPage();
-            } else {
-                alert(result.message || 'Add failed');
+            try {
+                const res = await fetch('/category_add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                    modal.hide();
+                    form.reset();
+                    reloadPage();
+                } else {
+                    alert(result.message || 'Add failed');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
             }
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
-    });
+        });
+    }
 
     // EDIT - populate modal
     document.querySelectorAll('.edit-category-btn').forEach(btn => {
@@ -267,32 +273,36 @@
     });
 
     // UPDATE category
-    document.getElementById('updateCategoryBtn')?.addEventListener('click', async () => {
-        const id = document.getElementById('editCatId').value;
-        const data = {
-            name: document.getElementById('editCatName').value,
-            image: document.getElementById('editCatImage').value,
-            status: document.getElementById('editCatStatus').value,
-            type: document.getElementById('editCatType').value
-        };
+    const updateBtn = document.getElementById('updateCategoryBtn');
+    if (updateBtn) {
+        updateBtn.addEventListener('click', async () => {
+            const id = document.getElementById('editCatId').value;
+            const data = {
+                name: document.getElementById('editCatName').value,
+                image: document.getElementById('editCatImage').value,
+                status: document.getElementById('editCatStatus').value,
+                type: document.getElementById('editCatType').value
+            };
 
-        try {
-            const res = await fetch(`/category_edit/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (result.success) {
-                bootstrap.Modal.getInstance(document.getElementById('editCategoryModal')).hide();
-                reloadPage();
-            } else {
-                alert(result.message || 'Update failed');
+            try {
+                const res = await fetch(`/category_edit/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCategoryModal'));
+                    modal.hide();
+                    reloadPage();
+                } else {
+                    alert(result.message || 'Update failed');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
             }
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
-    });
+        });
+    }
 
     // DELETE category
     document.querySelectorAll('.delete-category-btn').forEach(btn => {
@@ -318,7 +328,7 @@
         img.addEventListener('click', (e) => {
             e.stopPropagation();
             const src = img.getAttribute('src');
-            if (src) {
+            if (src && src !== 'https://placehold.co/50x50?text=No+Image') {
                 document.getElementById('previewImage').src = src;
                 new bootstrap.Modal(document.getElementById('imagePreviewModal')).show();
             }
@@ -348,5 +358,13 @@
     }
     .clickable-image:hover {
         transform: scale(1.1);
+    }
+    /* Ensure button is visible */
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    .btn-primary:hover {
+        background-color: #0b5ed7;
     }
 </style>

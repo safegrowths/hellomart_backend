@@ -8,17 +8,13 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <!-- Card header with title and Add button -->
-                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-                            <h4 class="card-title mb-2 mb-sm-0">Category List</h4>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                                <i class="fas fa-plus"></i> Add Category
-                            </button>
-                        </div>
-
-                        <!-- Search bar -->
                         <div class="row align-items-center mb-3">
-                            <div class="col-sm-8"></div>
+                            <div class="col-sm-8">
+                                <!-- Add Category Button - now on left side -->
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                    <i class="fas fa-plus"></i> Add Category
+                                </button>
+                            </div>
                             <div class="col-sm-4">
                                 <%- include('../utils/searchbox', { 
                                     search: search || '', 
@@ -93,7 +89,6 @@
                                 </tbody>
                             </table>
 
-                            <!-- Pagination -->
                             <%- include('../utils/pagination', { 
                                 currentPage: currentPage, 
                                 totalPages: totalPages, 
@@ -108,7 +103,7 @@
     </div>
 </div>
 
-<!-- ADD CATEGORY MODAL -->
+<!-- ADD CATEGORY MODAL (with file upload) -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -117,14 +112,18 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="addCategoryForm">
+                <form id="addCategoryForm" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label>Name *</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label>Image URL</label>
-                        <input type="url" name="image" class="form-control" placeholder="https://... or relative path">
+                        <label>Image (Upload)</label>
+                        <input type="file" name="imageFile" class="form-control" accept="image/*">
+                        <small class="text-muted">Supported: jpg, png, gif, webp (max 5MB)</small>
+                        <div id="imagePreviewAdd" class="mt-2" style="display:none;">
+                            <img id="previewAddImg" src="#" height="80" style="border-radius: 8px;">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label>Type</label>
@@ -168,8 +167,13 @@
                         <input type="text" name="name" id="editCatName" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label>Image URL</label>
-                        <input type="url" name="image" id="editCatImage" class="form-control">
+                        <label>Current Image</label><br>
+                        <img id="currentCatImage" src="" height="60" style="border-radius: 8px;">
+                        <label class="mt-2">Change Image (optional)</label>
+                        <input type="file" name="imageFile" id="editCatImageFile" class="form-control" accept="image/*">
+                        <div id="imagePreviewEdit" class="mt-2" style="display:none;">
+                            <img id="previewEditImg" src="#" height="80" style="border-radius: 8px;">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label>Type</label>
@@ -197,7 +201,7 @@
     </div>
 </div>
 
-<!-- IMAGE PREVIEW MODAL -->
+<!-- IMAGE PREVIEW MODAL (enlarged) -->
 <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -214,7 +218,7 @@
 
 <%- include('../layout/footer') %>
 
-<!-- Font Awesome fallback in case header doesn't include it -->
+<!-- Font Awesome fallback -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <script>
@@ -224,25 +228,43 @@
         window.location.href = url.pathname + url.search;
     }
 
-    // ADD category
+    // Preview image before upload (Add modal)
+    const addImageInput = document.querySelector('#addCategoryForm input[name="imageFile"]');
+    if (addImageInput) {
+        addImageInput.addEventListener('change', function(e) {
+            const previewDiv = document.getElementById('imagePreviewAdd');
+            const previewImg = document.getElementById('previewAddImg');
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    previewImg.src = ev.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        });
+    }
+
+    // ADD category (with file upload)
     const saveBtn = document.getElementById('saveCategoryBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', async () => {
             const form = document.getElementById('addCategoryForm');
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
 
             try {
                 const res = await fetch('/category_add', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: formData   // no Content-Type header, browser sets it with boundary
                 });
                 const result = await res.json();
                 if (result.success) {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
                     modal.hide();
                     form.reset();
+                    document.getElementById('imagePreviewAdd').style.display = 'none';
                     reloadPage();
                 } else {
                     alert(result.message || 'Add failed');
@@ -264,31 +286,53 @@
 
             document.getElementById('editCatId').value = id;
             document.getElementById('editCatName').value = name;
-            document.getElementById('editCatImage').value = image || '';
             document.getElementById('editCatStatus').value = status;
             document.getElementById('editCatType').value = type;
+            document.getElementById('currentCatImage').src = image || 'https://placehold.co/80x80?text=No+Image';
+            document.getElementById('editCatImageFile').value = '';
+            document.getElementById('imagePreviewEdit').style.display = 'none';
 
             new bootstrap.Modal(document.getElementById('editCategoryModal')).show();
         });
     });
 
-    // UPDATE category
+    // Preview new image in Edit modal
+    const editImageInput = document.getElementById('editCatImageFile');
+    if (editImageInput) {
+        editImageInput.addEventListener('change', function() {
+            const previewDiv = document.getElementById('imagePreviewEdit');
+            const previewImg = document.getElementById('previewEditImg');
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    previewImg.src = ev.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        });
+    }
+
+    // UPDATE category (with optional file)
     const updateBtn = document.getElementById('updateCategoryBtn');
     if (updateBtn) {
         updateBtn.addEventListener('click', async () => {
             const id = document.getElementById('editCatId').value;
-            const data = {
-                name: document.getElementById('editCatName').value,
-                image: document.getElementById('editCatImage').value,
-                status: document.getElementById('editCatStatus').value,
-                type: document.getElementById('editCatType').value
-            };
+            const formData = new FormData();
+            formData.append('name', document.getElementById('editCatName').value);
+            formData.append('status', document.getElementById('editCatStatus').value);
+            formData.append('type', document.getElementById('editCatType').value);
+            const fileInput = document.getElementById('editCatImageFile');
+            if (fileInput.files.length > 0) {
+                formData.append('imageFile', fileInput.files[0]);
+            }
 
             try {
                 const res = await fetch(`/category_edit/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    method: 'POST',   // using POST because PUT with FormData can be tricky; we'll handle in route
+                    body: formData
                 });
                 const result = await res.json();
                 if (result.success) {
@@ -323,7 +367,7 @@
         });
     });
 
-    // IMAGE PREVIEW ON CLICK
+    // IMAGE PREVIEW ON CLICK (enlarge)
     document.querySelectorAll('.clickable-image').forEach(img => {
         img.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -359,7 +403,6 @@
     .clickable-image:hover {
         transform: scale(1.1);
     }
-    /* Ensure button is visible */
     .btn-primary {
         background-color: #0d6efd;
         border-color: #0d6efd;

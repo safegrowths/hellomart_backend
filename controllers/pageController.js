@@ -3,6 +3,40 @@ const db = require('../db');
 const {all_banner_list } = require('../models/admin');
 
 // GET SUBCATEGORIES LIST
+const all_subcategory_list = async (search, status, limit, offset) => {
+    let sql = `
+        SELECT sc.id, sc.title, sc.image, sc.categorise_id, sc.status,
+               sc.created_at, c.title as category_name
+        FROM sub_categorise sc
+        LEFT JOIN categorise c ON sc.categorise_id = c.id
+        WHERE sc.title LIKE ?
+    `;
+
+    let params = [`%${search}%`];
+
+    if (status !== 'all') {
+        sql += ` AND sc.status = ?`;
+        params.push(status);
+    }
+
+    sql += ` ORDER BY sc.id DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const [rows] = await db.query(sql, params);
+    return rows;
+};
+const subcategory_count = async (search, status) => {
+    let sql = `SELECT COUNT(*) as total FROM sub_categorise WHERE title LIKE ?`;
+    let params = [`%${search}%`];
+
+    if (status !== 'all') {
+        sql += ` AND status = ?`;
+        params.push(status);
+    }
+
+    const [[{ total }]] = await db.query(sql, params);
+    return total;
+};
 
 exports.subcategoryview = async (req, res) => {
     try {

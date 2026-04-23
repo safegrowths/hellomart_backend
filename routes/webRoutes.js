@@ -19,6 +19,7 @@ router.get('/categorisee', pageController.categoriseForm);
 
 // ✅ Get Categories (all / filter)
 router.get('/category_view', pageController.categoryview);
+router.get('/users_view', pageController.usersview);
 
 // ✅ Toggle Status
 

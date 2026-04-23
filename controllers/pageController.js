@@ -69,6 +69,7 @@ exports.dashboardPage = (req, res) => {
 };
 
 exports.usersPage = (req, res) => {
+  
     res.render('users', { 
         title: 'Users',
         showNavigation: true,
@@ -197,7 +198,7 @@ exports.usersview = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).send(error.message);
+        res.status(500).send(`Mohan ji :-${error}`);
     }
 };
 

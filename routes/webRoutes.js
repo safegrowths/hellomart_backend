@@ -13,7 +13,9 @@ router.get('/settings', pageController.settingsPage);
 router.get('/product-attributes', pageController.getProductAttributes);
 router.get('/coupon', pageController.couponForm);
 router.get('/categorisee', pageController.categoryview);
-router.post('/category_add', pageController.addCategory);
+
+router.post('/category_add', upload.single('imageFile'), pageController.addCategory);
+
 router.put('/category_edit/:id', pageController.updateCategory);   // or POST with _method
 router.delete('/category_delete/:id', pageController.deleteCategory);
 router.get('/banner-list', pageController.bannerPage);

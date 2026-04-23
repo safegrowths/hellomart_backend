@@ -286,13 +286,7 @@ exports.couponForm = (req, res) => {
     currentPage: 'coupon'
   });
 };
-exports.categoriseForm = (req, res) => {
-  res.render('categorise', {
-    title: 'categorise',
-    showNavigation: true,
-    currentPage: 'categorise'
-  });
-};
+
 
 
 
@@ -422,11 +416,17 @@ exports.categoryview = async (req, res) => {
 };
 
 // Add new category
+const baseImageUrl = 'https://hellomartadmin.greatindianews.com/assets/images/shop_docs/';
+
 exports.addCategory = async (req, res) => {
     try {
-        const { name, image, status, type } = req.body;
+        let { name, image, status, type } = req.body;
         if (!name) {
             return res.status(400).json({ success: false, message: 'Category name is required' });
+        }
+        // If image is relative, prepend base URL
+        if (image && !image.startsWith('http')) {
+            image = baseImageUrl + image.replace(/^\/+/, '');
         }
         const sql = `INSERT INTO categorise (title, image, status, type, created_at, updated_at) 
                      VALUES (?, ?, ?, ?, NOW(), NOW())`;

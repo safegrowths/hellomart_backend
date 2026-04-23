@@ -165,22 +165,25 @@ exports.usersview = async (req, res) => {
     try {
         const search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;
-        let limit = 10; // records per page (adjust as needed)
-        let offset = (page - 1) * limit;
+        if (isNaN(page) || page < 1) page = 1;
 
-        // 1. Get total count of matching users (for pagination)
+        const limit = 10;
+        const offset = (page - 1) * limit;
+
+        // 🔹 Total count
         const [countRows] = await db.query(
             `SELECT COUNT(*) as total FROM users 
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
             [`%${search}%`, `%${search}%`, `%${search}%`]
         );
+
         const totalRecords = countRows[0].total;
         const totalPages = Math.ceil(totalRecords / limit);
 
-        // 2. Fetch paginated users
+        // 🔹 Users list
         const [users] = await db.query(
             `SELECT id, name, email, mobile, image, created_at, status,
-                    business_name, upload_shop_logo, shop_doc
+                    username, dob
              FROM users
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
              ORDER BY id DESC
@@ -188,42 +191,54 @@ exports.usersview = async (req, res) => {
             [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
         );
 
-        // 3. Get order summary per user (total orders & total spent)
-        const [orderSummary] = await db.query(`
-            SELECT user_id,
-                   COUNT(*) AS order_count,
-                   COALESCE(SUM(grand_total), 0) AS total_spent
-            FROM orders
-            GROUP BY user_id
-        `);
+        // 🔹 Get order summary (optimized)
+        const userIds = users.map(u => u.id);
+        let orderMap = {};
+        let ordersByUser = {};
+        let chartOrders = [];
 
-        // Map order data to user_id
-        const orderMap = {};
-        orderSummary.forEach(row => {
-            orderMap[row.user_id] = {
-                count: row.order_count,
-                total: row.total_spent
-            };
-        });
+        if (userIds.length > 0) {
+            const [orderSummary] = await db.query(
+                `SELECT user_id,
+                        COUNT(*) AS order_count,
+                        COALESCE(SUM(grand_total), 0) AS total_spent
+                 FROM orders
+                 WHERE user_id IN (?)
+                 GROUP BY user_id`,
+                [userIds]
+            );
 
-        // 4. Get all individual orders (for modal history)
-        const [allOrders] = await db.query(`
-            SELECT user_id, grand_total, created_at
-            FROM orders
-            ORDER BY created_at DESC
-        `);
-
-        // Group orders by user
-        const ordersByUser = {};
-        allOrders.forEach(order => {
-            if (!ordersByUser[order.user_id]) ordersByUser[order.user_id] = [];
-            ordersByUser[order.user_id].push({
-                amount: order.grand_total,
-                date: order.created_at
+            orderSummary.forEach(row => {
+                orderMap[row.user_id] = {
+                    count: row.order_count,
+                    total: row.total_spent
+                };
             });
-        });
 
-        // 5. Attach order info to each user
+            // 🔹 Orders list for modal
+            const [orders] = await db.query(
+                `SELECT user_id, grand_total, created_at
+                 FROM orders
+                 WHERE user_id IN (?)
+                 ORDER BY created_at DESC`,
+                [userIds]
+            );
+
+            orders.forEach(order => {
+                if (!ordersByUser[order.user_id]) {
+                    ordersByUser[order.user_id] = [];
+                }
+                ordersByUser[order.user_id].push({
+                    amount: order.grand_total,
+                    date: order.created_at
+                });
+            });
+
+            // 🔹 Chart (last 7 orders)
+            chartOrders = orders.slice(0, 7).map(o => o.grand_total).reverse();
+        }
+
+        // 🔹 Merge data
         const usersWithOrders = users.map(user => ({
             ...user,
             totalOrders: orderMap[user.id]?.count || 0,
@@ -231,21 +246,20 @@ exports.usersview = async (req, res) => {
             ordersList: ordersByUser[user.id] || []
         }));
 
-        // 6. Prepare chart data (last 7 orders across all users)
-        const chartOrders = allOrders.slice(0, 7).map(o => o.grand_total).reverse();
-
+        // 🔹 Render
         res.render('users', {
             pageName: 'Users',
             data: usersWithOrders,
             currentPage: page,
             totalPages,
+            limit,
             search,
-            chartOrders   // pass to view for optional chart
+            chartOrders
         });
 
     } catch (error) {
         console.error("Error in usersview:", error);
-        res.status(500).send(`Server Error ${error}`);
+        res.status(500).send("Server Error");
     }
 };
 // Show List Categories page (HTML)

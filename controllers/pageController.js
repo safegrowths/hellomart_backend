@@ -171,50 +171,7 @@ exports.showListPage = (req, res) => {
   });
 };
 
-exports.usersview = async (req, res) => {
-    try {
-        const search = req.query.search || "";
-        let page = parseInt(req.query.page) || 1;
-        if (isNaN(page) || page < 1) page = 1;
 
-        const limit = 10;
-        const offset = (page - 1) * limit;
-
-        // ✅ Total count
-        const [[countResult]] = await db.query(
-            `SELECT COUNT(*) as total FROM users 
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`]
-        );
-
-        const totalRecords = countResult.total;
-        const totalPages = Math.ceil(totalRecords / limit);
-
-        // ✅ Users list
-        const [users] = await db.query(
-            `SELECT id, name, image, created_at, mobile, email
-             FROM users
-             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
-             ORDER BY id DESC
-             LIMIT ? OFFSET ?`,
-            [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
-        );
-
-        // ✅ Send to view
-        res.render('users', {
-            data: users,
-            currentPage: page,
-            totalPages,
-            limit,
-            search,
-            pageName: 'Users'
-        });
-
-    } catch (error) {
-        console.error("Error in users_view:", error);
-        res.status(500).send(`error.message ${error}`);
-    }
-};
 
 
 const all_category_list = async (search, limit, offset) => {

@@ -418,69 +418,26 @@ exports.categoryview = async (req, res) => {
 // Add new category
 const baseImageUrl = 'https://hellomartadmin.greatindianews.com/assets/images/shop_docs/';
 
-// Configure storage
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = 'public/uploads/categories/';
-        // Create directory if it doesn't exist
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, 'cat-' + uniqueSuffix + ext);
-    }
-});
-
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb(new Error('Only images are allowed'));
-    }
-};
-
-const upload = multer({ 
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    fileFilter: fileFilter
-});
-
-// Then in your route, use upload.single('imageFile')
 exports.addCategory = async (req, res) => {
     try {
-        // Handle file upload using multer middleware (apply before this function)
-        // The file will be available at req.file
-        let { name, status, type } = req.body;
+        let { name, image, status, type } = req.body;
         if (!name) {
             return res.status(400).json({ success: false, message: 'Category name is required' });
         }
-
-        let imageUrl = '';
-        if (req.file) {
-            // Generate URL based on your base URL
-            const baseUrl = req.protocol + '://' + req.get('host');
-            imageUrl = baseUrl + '/uploads/categories/' + req.file.filename;
-        } else {
-            // If no file, you might keep existing or set empty
-            imageUrl = '';
+        // If image is relative, prepend base URL
+        if (image && !image.startsWith('http')) {
+            image = baseImageUrl + image.replace(/^\/+/, '');
         }
-
         const sql = `INSERT INTO categorise (title, image, status, type, created_at, updated_at) 
                      VALUES (?, ?, ?, ?, NOW(), NOW())`;
-        await db.query(sql, [name, imageUrl, status || 1, type || 1]);
+        await db.query(sql, [name, image || '', status || 1, type || 1]);
         res.json({ success: true, message: 'Category added successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Database error' });
     }
 };
+
 // Update category
 exports.updateCategory = async (req, res) => {
     try {

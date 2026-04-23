@@ -1,5 +1,5 @@
-<%- include('../layout/header', { title: 'Users List' }) %>
-<%- include('../layout/sidebar', { currentPage: 'users' }) %>
+<%- include('layout/header', { title: 'Categories List', showNavigation: true }) %>
+<%- include('layout/sidebar', { currentPage: 'categories-list' }) %>
 
 <div class="content-body">
     <div class="container-fluid">
@@ -92,14 +92,10 @@
     </div>
 </div>
 
-<%- include('../layout/footer') %>
+<%- include('layout/footer', { pageScript: 'categories-init.min.js' }) %>
 
 <script>
-function editUser(id) {
-    window.location.href = `/users/edit/${id}`;
-}
 
-async function deleteUser(id) {
     if (!confirm('Delete this user?')) return;
 
     try {

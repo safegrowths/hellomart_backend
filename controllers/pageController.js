@@ -245,7 +245,7 @@ exports.usersview = async (req, res) => {
 
     } catch (error) {
         console.error("Error in usersview:", error);
-        res.status(500).send('Server Error');
+        res.status(500).send(`Server Error ${error}`);
     }
 };
 // Show List Categories page (HTML)

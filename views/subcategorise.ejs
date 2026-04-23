@@ -15,22 +15,10 @@
           <button class="btn btn-primary">Search</button>
         </form>
 
-        <button class="btn btn-success" onclick="openModal()">
-          + Add
+        <button class="btn btn-primary px-4" onclick="openModal()">
+          <i class="fa fa-plus"></i> Add
         </button>
       </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="mb-3 d-flex gap-2">
-      <a href="/subcategories?status=all" 
-        class="btn <%= status=='all'?'btn-primary':'btn-outline-primary' %>">All</a>
-
-      <a href="/subcategories?status=1" 
-        class="btn <%= status=='1'?'btn-success':'btn-outline-success' %>">Active</a>
-
-      <a href="/subcategories?status=0" 
-        class="btn <%= status=='0'?'btn-secondary':'btn-outline-secondary' %>">Inactive</a>
     </div>
 
     <!-- TABLE -->
@@ -43,6 +31,7 @@
             <thead class="table-light">
               <tr>
                 <th>#</th>
+                <th>Image</th>
                 <th>Category</th>
                 <th>Name</th>
                 <th>Status</th>
@@ -54,7 +43,7 @@
             <tbody>
               <% if (subcategories.length === 0) { %>
                 <tr>
-                  <td colspan="6" class="text-center text-muted">No Data Found</td>
+                  <td colspan="7" class="text-center text-muted">No Data Found</td>
                 </tr>
               <% } %>
 
@@ -62,6 +51,16 @@
                 <tr>
 
                   <td><%= ((currentPage - 1) * 10) + index + 1 %></td>
+
+                  <!-- IMAGE -->
+                  <td>
+                    <img 
+                      src="<%= sub.image && sub.image.startsWith('http') 
+                            ? sub.image 
+                            : '/uploads/' + (sub.image || 'default.png') %>" 
+                      width="50" height="50"
+                      style="border-radius:50%;object-fit:cover;">
+                  </td>
 
                   <td>
                     <span class="badge bg-info text-dark">
@@ -84,7 +83,9 @@
                   </td>
 
                   <td class="text-center">
-                    <button class="btn btn-sm btn-outline-primary me-1"
+
+                    <!-- EDIT -->
+                    <button class="btn btn-sm btn-info text-white me-1"
                       onclick="editData(
                         <%= sub.id %>,
                         '<%= sub.title %>',
@@ -92,19 +93,22 @@
                         <%= sub.status %>,
                         `<%= sub.description || '' %>`
                       )">
-                      Edit
+                      <i class="fa fa-edit"></i>
                     </button>
 
+                    <!-- TOGGLE -->
                     <a href="/subcategories_status/<%= sub.id %>" 
-                       class="btn btn-sm btn-outline-warning me-1">
-                       Toggle
+                       class="btn btn-sm btn-warning me-1">
+                       <i class="fa fa-sync"></i>
                     </a>
 
+                    <!-- DELETE -->
                     <a href="/subcategories_delete/<%= sub.id %>" 
                        onclick="return confirm('Delete?')" 
-                       class="btn btn-sm btn-outline-danger">
-                       Delete
+                       class="btn btn-sm btn-danger">
+                       <i class="fa fa-trash"></i>
                     </a>
+
                   </td>
 
                 </tr>
@@ -116,7 +120,7 @@
         <!-- PAGINATION -->
         <div class="d-flex justify-content-center mt-3 flex-wrap">
           <% for(let i = 1; i <= totalPages; i++) { %>
-            <a href="/subcategories?page=<%= i %>&search=<%= search %>&status=<%= status %>"
+            <a href="/subcategories?page=<%= i %>&search=<%= search %>"
               class="btn btn-sm <%= i==currentPage ? 'btn-primary':'btn-outline-primary' %> m-1">
               <%= i %>
             </a>
@@ -130,13 +134,13 @@
 </div>
 
 <!-- MODAL -->
-<div class="modal fade" id="myModal" tabindex="-1">
+<div class="modal fade" id="myModal">
   <div class="modal-dialog">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Add / Edit Subcategory</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title" id="modalTitle">Add Subcategory</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
@@ -164,7 +168,7 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-primary w-100" onclick="save()">Save</button>
+        <button class="btn btn-success w-100" id="saveBtn" onclick="save()">Add Subcategory</button>
       </div>
 
     </div>
@@ -184,6 +188,9 @@
 function openModal(){
   document.getElementById('form').reset();
   document.getElementById('id').value = '';
+  document.getElementById('modalTitle').innerText = "Add Subcategory";
+  document.getElementById('saveBtn').innerText = "Add Subcategory";
+
   new bootstrap.Modal(document.getElementById('myModal')).show();
 }
 
@@ -193,6 +200,10 @@ function editData(id,title,cat,status,desc){
   document.getElementById('category').value = cat;
   document.getElementById('status').value = status;
   document.getElementById('description').value = desc;
+
+  document.getElementById('modalTitle').innerText = "Update Subcategory";
+  document.getElementById('saveBtn').innerText = "Update Subcategory";
+
   new bootstrap.Modal(document.getElementById('myModal')).show();
 }
 

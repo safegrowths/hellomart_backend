@@ -190,23 +190,25 @@ exports.categoryview = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        const category_list = await all_category_list(search, limit, offset);
+        // Get categories for current page
+        const categories = await all_category_list(search, limit, offset);
 
+        // Get total count for pagination
         const countQuery = `SELECT COUNT(*) as total FROM categorise WHERE title LIKE ?`;
         const [[{ total }]] = await db.query(countQuery, [`%${search}%`]);
         const totalPages = Math.ceil(total / limit);
 
-        // Pass a clean object – use 'categories' as array name
-        res.render('category/list.ejs', {
-            categories: category_list,
+        // Render the view
+        res.render('category/list', {
+            title: 'Category List',
+            categories: categories,
             currentPage: page,
-            totalPages,
-            search,
+            totalPages: totalPages,
+            search: search,
             pageName: 'Category'
         });
     } catch (error) {
         console.error(error);
-        // Render an error page instead of JSON (because this is an HTML request)
         res.status(500).render('error', { message: 'Failed to load categories' });
     }
 };

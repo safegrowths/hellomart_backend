@@ -1,101 +1,136 @@
-<%- include('../layout/header') %>
-<%- include('../layout/sidebar') %>
+<%- include('../layout/header', { title: 'Category List' }) %>
+<%- include('../layout/sidebar', { currentPage: 'categories' }) %>
 
+<!-- Content body start -->
+<div class="content-body">
+    <div class="container-fluid">
+        <!-- Include add category modal/form (optional) -->
+        <%- include('../category/category_add') %>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<i class="fa-solid fa-pen"></i>
-<!--**********************************
-            Content body start
-        ***********************************-->
-        <div class="content-body">
-            <!-- row -->
-
-            <div class="container-fluid">
-                <%- include('../category/category_add') %>
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-sm-8">
-                                        <h4 class="card-title">Category List</h4>
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <%- include('../utils/searchbox') %>
-                                    </div>
-                                </div>
-                                
-                                <div class="table-responsive">
-                                    <table id="myTable" class="table table-striped table-bordered zero-configuration">
-                                        <thead>
-                                            <tr>
-                                                <th>Sr. No</th>
-                                                <th>Name</th>
-                                                <th>Image</th>
-                                                <th>Status</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% if (data && data.length > 0) { %>
-                                                <% data.forEach(function(n, index) { %>
-                                                    <tr>
-                                                        <td><%= ((currentPage - 1) * 10) + index + 1 %></td>
-                                                        <td><%= n.name %></td>
-                                                        <td>
-                                                            <img src="<%= n.image %>" height="50" width="50"
-                                                                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png';"
-                                                                 style="border-radius:50px;border:2px solid black">
-                                                        </td>
-                                                        <td>
-                                                            <% if (n.status == 1) { %>
-                                                                <span class="text-success">Active</span>
-                                                            <% } else if (n.status == 2) { %>
-                                                                <span class="text-danger">Reject</span>
-                                                            <% } else { %>
-                                                                <span class="text-primary">Inactive</span>
-                                                            <% } %>
-                                                        </td>
-                                                        <td><%= n.created_at %></td>
-                                                        <td><%= n.updated_at %></td>
-                                                        <td>
-                                                            <i class="fa-solid fa-pen text-primary"></i>
-                                                            <i class="fa-solid fa-trash text-danger"></i>
-                                                        </td>
-                                                    </tr>
-                                                <% }) %>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="7" class="text-center">No Data Found</td>
-                                                </tr>
-                                            <% } %>
-                                            </tbody>
-
-                                        <tfoot>
-                                            <tr>
-                                                <th>Sr. No</th>
-                                                <th>Name</th>
-                                                <th>Image</th>
-                                                <th>Status</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                    <%- include('../utils/pagination') %>
-                                </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-sm-8">
+                                <h4 class="card-title mb-0">Category List</h4>
                             </div>
+                            <div class="col-sm-4">
+                                <!-- Searchbox partial with parameters -->
+                                <%- include('../utils/searchbox', { 
+                                    search: search || '', 
+                                    action: '/category_view' 
+                                }) %>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Image</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Updated At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (categories && categories.length > 0) { %>
+                                        <% categories.forEach((cat, index) => { %>
+                                            <tr>
+                                                <td><%= ((currentPage - 1) * 10) + index + 1 %></td>
+                                                <td><%= cat.name %></td>
+                                                <td>
+                                                    <img src="<%= cat.image %>" 
+                                                         height="50" width="50"
+                                                         onerror="this.src='https://placehold.co/50x50?text=No+Image'"
+                                                         style="border-radius: 50%; object-fit: cover; border: 1px solid #ddd;">
+                                                </td>
+                                                <td>
+                                                    <% if (cat.status == 1) { %>
+                                                        <span class="badge bg-success">Active</span>
+                                                    <% } else if (cat.status == 2) { %>
+                                                        <span class="badge bg-danger">Reject</span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary">Inactive</span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= cat.created_at || '-' %></td>
+                                                <td><%= cat.updated_at || '-' %></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editCategory(<%= cat.id %>)">
+                                                        <i class="fas fa-pen"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(<%= cat.id %>)">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">No categories found</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                             </table>
+
+                            <!-- Pagination partial -->
+                            <%- include('../utils/pagination', { 
+                                currentPage: currentPage, 
+                                totalPages: totalPages, 
+                                search: search, 
+                                baseUrl: '/category_view' 
+                            }) %>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- #/ container -->
         </div>
-        <!--**********************************
-            Content body end
-        ***********************************-->
+    </div>
+</div>
+<!-- Content body end -->
 
 <%- include('../layout/footer') %>
+
+<script>
+    function editCategory(id) {
+        window.location.href = `/category/edit/${id}`;
+    }
+
+    async function deleteCategory(id) {
+        if (!confirm('Are you sure you want to delete this category?')) return;
+        try {
+            const response = await fetch(`/category/delete/${id}`, { method: 'DELETE' });
+            const data = await response.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Delete failed');
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+</script>
+
+<style>
+    /* Adjust for sidebar if needed */
+    .content-body {
+        margin-left: 260px;
+        padding: 20px;
+        transition: all 0.3s;
+    }
+    @media (max-width: 768px) {
+        .content-body {
+            margin-left: 0;
+        }
+    }
+    .table img {
+        max-width: 50px;
+        max-height: 50px;
+    }
+</style>

@@ -182,7 +182,7 @@ exports.usersview = async (req, res) => {
 
         // ✅ Simple users list (ONLY users table)
         const [users] = await db.query(
-            `SELECT id, name, image, created_at, mobile, amount, email, 
+            `SELECT id, name, image, created_at, mobile, email, 
                     business_name, upload_shop_logo, shop_doc, token
              FROM users
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?

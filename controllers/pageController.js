@@ -170,45 +170,44 @@ exports.showListPage = (req, res) => {
   });
 };
 
+const all_category_list = async (search, limit, offset) => {
+    const sql = `
+        SELECT id, title AS name, image, status, created_at, updated_at
+        FROM categorise
+        WHERE title LIKE ?
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?
+    `;
+    const [rows] = await db.query(sql, [`%${search}%`, limit, offset]);
+    return rows;
+};
+
 exports.categoryview = async (req, res) => {
     try {
         const search = req.query.search || "";
         let page = parseInt(req.query.page) || 1;
-        let limit = 10;
-        let offset = (page - 1) * limit;
+        if (isNaN(page) || page < 1) page = 1;
+        const limit = 10;
+        const offset = (page - 1) * limit;
 
-        // Get category list
         const category_list = await all_category_list(search, limit, offset);
 
-        // Count total records (IMPORTANT FIX)
-        let countQuery = `
-            SELECT COUNT(*) as total 
-            FROM categorise 
-            WHERE title LIKE ?
-        `;
+        const countQuery = `SELECT COUNT(*) as total FROM categorise WHERE title LIKE ?`;
+        const [[{ total }]] = await db.query(countQuery, [`%${search}%`]);
+        const totalPages = Math.ceil(total / limit);
 
-        const [[countResult]] = await db.query(countQuery, [`%${search}%`]);
-
-        const totalRecords = countResult.total;
-        const totalPages = Math.ceil(totalRecords / limit);
-
-        const data = {
-            data: category_list,
+        // Pass a clean object – use 'categories' as array name
+        res.render('category/list.ejs', {
+            categories: category_list,
             currentPage: page,
             totalPages,
             search,
             pageName: 'Category'
-        };
-
-        res.render('category/list.ejs', data);
-
-    } catch (error) {
-        console.error("Error in category view:", error);
-        return res.status(500).json({
-            success: false,
-            message: 'Server error',
-            error: error.message
         });
+    } catch (error) {
+        console.error(error);
+        // Render an error page instead of JSON (because this is an HTML request)
+        res.status(500).render('error', { message: 'Failed to load categories' });
     }
 };
 

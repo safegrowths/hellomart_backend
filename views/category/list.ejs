@@ -1,101 +1,93 @@
 <%- include('../layout/header') %>
 <%- include('../layout/sidebar') %>
 
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<i class="fa-solid fa-pen"></i>
-<!--**********************************
-            Content body start
-        ***********************************-->
-        <div class="content-body">
-            <!-- row -->
-
-            <div class="container-fluid">
-                
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-sm-8">
-                                        <h4 class="card-title">Category List</h4>
-                                    </div>
-                                    <div class="col-sm-4">
-                                        <%- include('../utils/searchbox') %>
-                                    </div>
-                                </div>
-                                
-                                <div class="table-responsive">
-                                    <table id="myTable" class="table table-striped table-bordered zero-configuration">
-                                        <thead>
-                                            <tr>
-                                                <th>Sr. No</th>
-                                                <th>Name</th>
-                                                <th>Image</th>
-                                                <th>Status</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% if (data && data.length > 0) { %>
-                                                <% data.forEach(function(n, index) { %>
-                                                    <tr>
-                                                        <td><%= ((currentPage - 1) * 10) + index + 1 %></td>
-                                                        <td><%= n.name %></td>
-                                                        <td>
-                                                            <img src="<%= n.image %>" height="50" width="50"
-                                                                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png';"
-                                                                 style="border-radius:50px;border:2px solid black">
-                                                        </td>
-                                                        <td>
-                                                            <% if (n.status == 1) { %>
-                                                                <span class="text-success">Active</span>
-                                                            <% } else if (n.status == 2) { %>
-                                                                <span class="text-danger">Reject</span>
-                                                            <% } else { %>
-                                                                <span class="text-primary">Inactive</span>
-                                                            <% } %>
-                                                        </td>
-                                                        <td><%= n.created_at %></td>
-                                                        <td><%= n.updated_at %></td>
-                                                        <td>
-                                                            <i class="fa-solid fa-pen text-primary"></i>
-                                                            <i class="fa-solid fa-trash text-danger"></i>
-                                                        </td>
-                                                    </tr>
-                                                <% }) %>
-                                            <% } else { %>
-                                                <tr>
-                                                    <td colspan="7" class="text-center">No Data Found</td>
-                                                </tr>
-                                            <% } %>
-                                            </tbody>
-
-                                        <tfoot>
-                                            <tr>
-                                                <th>Sr. No</th>
-                                                <th>Name</th>
-                                                <th>Image</th>
-                                                <th>Status</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                    <%- include('../utils/pagination') %>
-                                </div>
+<div class="content-body">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <h4 class="card-title">Category List</h4>
                             </div>
+                            <div class="col-sm-4">
+                                <%- include('../utils/searchbox', { search: search, action: '/category_view' }) %>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No</th>
+                                        <th>Name</th>
+                                        <th>Image</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Updated At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (categories && categories.length > 0) { %>
+                                        <% categories.forEach((cat, idx) => { %>
+                                            <tr>
+                                                <td><%= ((currentPage - 1) * 10) + idx + 1 %></td>
+                                                <td><%= cat.name %></td>
+                                                <td>
+                                                    <img src="<%= cat.image %>" height="50" width="50"
+                                                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png';"
+                                                         style="border-radius:50px; border:2px solid black">
+                                                </td>
+                                                <td>
+                                                    <% if (cat.status == 1) { %>
+                                                        <span class="text-success">Active</span>
+                                                    <% } else if (cat.status == 2) { %>
+                                                        <span class="text-danger">Reject</span>
+                                                    <% } else { %>
+                                                        <span class="text-primary">Inactive</span>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= cat.created_at %></td>
+                                                <td><%= cat.updated_at %></td>
+                                                <td>
+                                                    <i class="fa-solid fa-pen text-primary" onclick="editCategory(<%= cat.id %>)"></i>
+                                                    <i class="fa-solid fa-trash text-danger" onclick="deleteCategory(<%= cat.id %>)"></i>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center">No Data Found</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+
+                            <%- include('../utils/pagination', { 
+                                currentPage, totalPages, search, 
+                                baseUrl: '/category_view' 
+                            }) %>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- #/ container -->
         </div>
-        <!--**********************************
-            Content body end
-        ***********************************-->
+    </div>
+</div>
 
 <%- include('../layout/footer') %>
+
+<script>
+    function editCategory(id) {
+        window.location.href = `/category/edit/${id}`;
+    }
+    function deleteCategory(id) {
+        if (confirm('Are you sure?')) {
+            fetch(`/category/delete/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => data.success ? location.reload() : alert('Failed'));
+        }
+    }
+</script>

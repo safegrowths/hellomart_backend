@@ -20,6 +20,11 @@ router.post('/orders-create', pageController.createOrder);
 router.get('/users_view', pageController.users_view);
 router.get('/products', pageController.productsForm);
 router.get('/transactions', pageController.transactionsForm);
+router.get('/subcategories', pageController.subcategoryview);
+router.post('/subcategories/add', pageController.add_subcategory);
+router.post('/subcategories/update', pageController.update_subcategory);
+router.get('/subcategories/delete/:id', pageController.delete_subcategory);
+router.get('/subcategories/status/:id', pageController.toggle_status);
 
 
 

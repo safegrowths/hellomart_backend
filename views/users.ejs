@@ -95,7 +95,11 @@
 <%- include('layout/footer', { pageScript: 'categories-init.min.js' }) %>
 
 <script>
+function editUser(id) {
+    window.location.href = `/users/edit/${id}`;
+}
 
+async function deleteUser(id) {
     if (!confirm('Delete this user?')) return;
 
     try {

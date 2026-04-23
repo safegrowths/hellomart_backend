@@ -2,6 +2,161 @@ const multer = require('multer');
 const db = require('../db');
 const {all_banner_list } = require('../models/admin');
 
+// GET SUBCATEGORIES LIST
+const all_subcategory_list = async (search, status, limit, offset) => {
+    let sql = `
+        SELECT sc.id, sc.title, sc.image, sc.categorise_id, sc.status,
+               sc.created_at, c.title as category_name
+        FROM sub_categorise sc
+        LEFT JOIN categorise c ON sc.categorise_id = c.id
+        WHERE sc.title LIKE ?
+    `;
+
+    let params = [`%${search}%`];
+
+    if (status !== 'all') {
+        sql += ` AND sc.status = ?`;
+        params.push(status);
+    }
+
+    sql += ` ORDER BY sc.id DESC LIMIT ? OFFSET ?`;
+    params.push(limit, offset);
+
+    const [rows] = await db.query(sql, params);
+    return rows;
+};
+const subcategory_count = async (search, status) => {
+    let sql = `SELECT COUNT(*) as total FROM sub_categorise WHERE title LIKE ?`;
+    let params = [`%${search}%`];
+
+    if (status !== 'all') {
+        sql += ` AND status = ?`;
+        params.push(status);
+    }
+
+    const [[{ total }]] = await db.query(sql, params);
+    return total;
+};
+exports.subcategoryview = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        const status = req.query.status || "all";
+        let page = parseInt(req.query.page) || 1;
+
+        if (page < 1) page = 1;
+
+        const limit = 10;
+        const offset = (page - 1) * limit;
+
+        const subcategories = await all_subcategory_list(search, status, limit, offset);
+        const total = await subcategory_count(search, status);
+
+        const totalPages = Math.ceil(total / limit);
+
+        // categories dropdown ke liye
+        const [categories] = await db.query(`SELECT id, title FROM categorise WHERE status=1`);
+
+        res.render('subcategory/list', {
+            title: 'Subcategory List',
+            subcategories,
+            categories,
+            currentPage: page,
+            totalPages,
+            search,
+            status,
+            pageName: 'Subcategory'
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error loading subcategories");
+    }
+};
+exports.delete_subcategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await db.query(`DELETE FROM sub_categorise WHERE id=?`, [id]);
+
+        res.json({ msg: "Deleted successfully" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Delete failed" });
+    }
+};
+
+exports.toggle_status = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await db.query(`
+            UPDATE sub_categorise 
+            SET status = IF(status=1, 0, 1)
+            WHERE id=?
+        `, [id]);
+
+        res.json({ msg: "Status updated" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Status update failed" });
+    }
+};
+
+exports.update_subcategory = async (req, res) => {
+    try {
+        const { id, title, categorise_id, status, description } = req.body;
+
+        const sql = `
+            UPDATE sub_categorise 
+            SET title=?, categorise_id=?, status=?, description=?, updated_at=NOW()
+            WHERE id=?
+        `;
+
+        await db.query(sql, [
+            title,
+            categorise_id,
+            status,
+            description,
+            id
+        ]);
+
+        res.json({ msg: "Updated successfully" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Update failed" });
+    }
+};
+exports.add_subcategory = async (req, res) => {
+    try {
+        const { title, categorise_id, status, description } = req.body;
+
+        if (!title || !categorise_id) {
+            return res.status(400).json({ msg: "Required fields missing" });
+        }
+
+        const sql = `
+            INSERT INTO sub_categorise (title, categorise_id, status, description, created_at)
+            VALUES (?, ?, ?, ?, NOW())
+        `;
+
+        await db.query(sql, [
+            title,
+            categorise_id,
+            status || 1,
+            description || ""
+        ]);
+
+        res.json({ msg: "Subcategory added successfully" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ msg: "Error adding subcategory" });
+    }
+};
+// COUNT
 
 exports.homePage = (req, res) => {
     res.render('login');

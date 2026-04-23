@@ -91,100 +91,8 @@ exports.subcategorisePage = (req, res) => {
         currentPage: 'subcategorise'
     });
 };
-// Configure multer for image upload
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'public/uploads/categories/'),
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
-});
-const upload = multer({ storage }).single('image');
-
-// Helper function to run queries
-const runQuery = (sql, params) => db.promise().execute(sql, params);
-
-// 1. List categories (GET)
 
 
-// 2. Get single category (for edit modal)
-exports.getCategoryById = async (req, res) => {
-    try {
-        const id = req.params.id;
-        const [rows] = await runQuery('SELECT id, title, image, type, status FROM categorise WHERE id = ?', [id]);
-        if (rows.length) {
-            res.json({ success: true, data: rows[0] });
-        } else {
-            res.json({ success: false, message: 'Category not found' });
-        }
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
-
-// 3. Add category (POST)
-exports.addCategory = async (req, res) => {
-    upload(req, res, async (err) => {
-        if (err) return res.json({ success: false, message: err.message });
-        try {
-            const { title, type, status } = req.body;
-            if (!title) return res.json({ success: false, message: 'Title is required' });
-            let image = null;
-            if (req.file) image = '/uploads/categories/' + req.file.filename;
-
-            await runQuery(
-                'INSERT INTO categorise (title, image, type, status, created_at) VALUES (?, ?, ?, ?, NOW())',
-                [title, image, type, status]
-            );
-            res.json({ success: true, message: 'Category added successfully' });
-        } catch (error) {
-            res.json({ success: false, message: error.message });
-        }
-    });
-};
-
-// 4. Update category (POST)
-exports.updateCategory = async (req, res) => {
-    upload(req, res, async (err) => {
-        if (err) return res.json({ success: false, message: err.message });
-        try {
-            const { id, title, type, status, existing_image } = req.body;
-            if (!id || !title) return res.json({ success: false, message: 'Missing data' });
-
-            let image = existing_image;
-            if (req.file) image = '/uploads/categories/' + req.file.filename;
-
-            await runQuery(
-                'UPDATE categorise SET title = ?, image = ?, type = ?, status = ?, updated_at = NOW() WHERE id = ?',
-                [title, image, type, status, id]
-            );
-            res.json({ success: true, message: 'Category updated' });
-        } catch (error) {
-            res.json({ success: false, message: error.message });
-        }
-    });
-};
-
-// 5. Delete category (POST)
-exports.deleteCategory = async (req, res) => {
-    try {
-        const { id } = req.body;
-        if (!id) return res.json({ success: false, message: 'ID required' });
-        await runQuery('DELETE FROM categorise WHERE id = ?', [id]);
-        res.json({ success: true, message: 'Category deleted' });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
-
-// 6. Toggle status (POST)
-exports.toggleStatus = async (req, res) => {
-    try {
-        const { id, status } = req.body;
-        if (!id || !status) return res.json({ success: false, message: 'Missing data' });
-        await runQuery('UPDATE categorise SET status = ? WHERE id = ?', [status, id]);
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
 
 exports.settingsPage = (req, res) => {
     res.render('settings', { 
@@ -260,6 +168,48 @@ exports.showListPage = (req, res) => {
     showNavigation: true,
     currentPage: 'list'
   });
+};
+
+exports.categoryview = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        let page = parseInt(req.query.page) || 1;
+        let limit = 10;
+        let offset = (page - 1) * limit;
+
+        // Get category list
+        const category_list = await all_category_list(search, limit, offset);
+
+        // Count total records (IMPORTANT FIX)
+        let countQuery = `
+            SELECT COUNT(*) as total 
+            FROM categorise 
+            WHERE title LIKE ?
+        `;
+
+        const [[countResult]] = await db.query(countQuery, [`%${search}%`]);
+
+        const totalRecords = countResult.total;
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        const data = {
+            data: category_list,
+            currentPage: page,
+            totalPages,
+            search,
+            pageName: 'Category'
+        };
+
+        res.render('category/list.ejs', data);
+
+    } catch (error) {
+        console.error("Error in category view:", error);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
 };
 
 exports.bannerPage = async (req, res) => {

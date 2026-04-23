@@ -103,7 +103,7 @@ exports.settingsPage = (req, res) => {
     });
 };
 
-// Show Add Category form (HTML)
+
 exports.showAddForm = (req, res) => {
   res.render('category_add', {
     title: 'Add Category',
@@ -144,16 +144,16 @@ exports.categoriseForm = (req, res) => {
 };
 
 
-// Add Order Form (GET)
+
 exports.showAddOrderForm = (req, res) => {
-  res.render('order', {   // or 'orders/add' depending on your view path
+  res.render('order', {   
     title: 'Add New Order',
     showNavigation: true,
     currentPage: 'order'
   });
 };
 
-// Process New Order (POST) – example stub
+
 exports.createOrder = (req, res) => {
   const { customer, orderId, amount, status, orderDate, notes } = req.body;
   // Here you would save to database, then redirect
@@ -162,50 +162,7 @@ exports.createOrder = (req, res) => {
   res.redirect('/orders');
 };
 
-exports.usersview = async (req, res) => {
-    try {
-        const search = req.query.search || "";
-        let page = parseInt(req.query.page) || 1;
-        if (isNaN(page) || page < 1) page = 1;
 
-        const limit = 10;
-        const offset = (page - 1) * limit;
-
-        // const [[countResult]] = await db.query(
-        //     `SELECT COUNT(*) as total FROM users 
-        //      WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
-        //     [`%${search}%`, `%${search}%`, `%${search}%`]
-        // );
-
-        // const totalPages = Math.ceil(countResult.total / limit);
-
-        // const [users] = await db.query(
-        //     `SELECT id, name, image, created_at, mobile, email
-        //      FROM users
-        //      WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
-        //      ORDER BY id DESC
-        //      LIMIT ? OFFSET ?`,
-        //     [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
-        // );
-
-        const users =[];
-        const totalPages=[];
-
-        res.render('users/list', {
-            data: users || [],
-            currentPage: page || '',
-            totalPages : totalPages || '',
-            limit: limit || '',
-            search : search || ''
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send(`Mohan ji :-${error}`);
-    }
-};
-
-// Show List Categories page (HTML)
 exports.showListPage = (req, res) => {
   res.render('list', {
     title: 'Categories List',
@@ -254,6 +211,50 @@ exports.categoryview = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).render('error', { message: 'Failed to load categories' });
+    }
+};
+exports.usersview = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        let page = parseInt(req.query.page) || 1;
+
+        if (isNaN(page) || page < 1) page = 1;
+
+        const limit = 10;
+        const offset = (page - 1) * limit;
+
+        // ✅ Get Users List
+        const [users] = await db.query(
+            `SELECT id, name, image, created_at, mobile, email
+             FROM users
+             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
+             ORDER BY id DESC
+             LIMIT ? OFFSET ?`,
+            [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
+        );
+
+        // ✅ Total Count
+        const [[countResult]] = await db.query(
+            `SELECT COUNT(*) as total FROM users
+             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
+            [`%${search}%`, `%${search}%`, `%${search}%`]
+        );
+
+        const totalRecords = countResult.total;
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        res.render('users', {
+            data: users,
+            currentPage: page,
+            totalPages,
+            search,
+            limit,
+            pageName: 'Users'
+        });
+
+    } catch (error) {
+        console.error("❌ ERROR in usersview:", error);
+        res.status(500).send(error.message);
     }
 };
 

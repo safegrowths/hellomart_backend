@@ -1,8 +1,6 @@
 <%- include('../layout/header') %>
 <%- include('../layout/sidebar') %>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <div class="content-body">
     <div class="container-fluid">
 
@@ -17,118 +15,73 @@
                                 <h4 class="card-title">Users List</h4>
                             </div>
                             <div class="col-sm-4">
-                                <%- include('../utils/searchbox') %>
+                                <form method="GET" action="/users_view">
+                                    <input type="text" name="search" value="<%= search %>" placeholder="Search..."
+                                        class="form-control">
+                                </form>
                             </div>
                         </div>
 
                         <!-- Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped table-bordered">
+                            <table class="table table-bordered table-striped">
 
                                 <thead>
                                     <tr>
-                                        <th>Sr. No</th>
+                                        <th>Sr No</th>
                                         <th>Name</th>
-                                        <th>User Name</th>
                                         <th>Mobile</th>
-                                        <th>DOB</th>
                                         <th>Email</th>
                                         <th>Image</th>
-                                        <th>Status</th>
-                                        <th>Created At</th>
-                                        <th>Updated</th>
-                                        <th>Action</th>
+                                        <th>Created</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    <% if (data && data.length > 0) { %>
-                                        <% data.forEach(function(n, index) { %>
+                                    <% if (data.length > 0) { %>
+                                        <% data.forEach(function(user, index) { %>
                                             <tr>
 
-                                                <!-- Serial -->
                                                 <td>
                                                     <%= ((currentPage - 1) * limit) + index + 1 %>
                                                 </td>
 
-                                                <!-- Name -->
-                                                <td><%= n.name %></td>
+                                                <td><%= user.name %></td>
+                                                <td><%= user.mobile || '-' %></td>
+                                                <td><%= user.email %></td>
 
-                                                <!-- Username (fallback) -->
-                                                <td><%= n.name %></td>
-
-                                                <!-- Mobile -->
-                                                <td><%= n.mobile || '-' %></td>
-
-                                                <!-- DOB (not in DB) -->
-                                                <td>-</td>
-
-                                                <!-- Email -->
-                                                <td><%= n.email %></td>
-
-                                                <!-- Image -->
                                                 <td>
-                                                    <img src="<%= n.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
-                                                        height="50" width="50"
-                                                        style="border-radius:50px;border:2px solid #000;">
+                                                    <img src="<%= user.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
+                                                         width="50" height="50"
+                                                         style="border-radius:50%">
                                                 </td>
 
-                                                <!-- Status (not in DB) -->
                                                 <td>
-                                                    <span class="text-secondary">N/A</span>
-                                                </td>
-
-                                                <!-- Created -->
-                                                <td>
-                                                    <%= n.created_at ? new Date(n.created_at).toLocaleString() : '-' %>
-                                                </td>
-
-                                                <!-- Updated (not in DB) -->
-                                                <td>-</td>
-
-                                                <!-- Action -->
-                                                <td>
-                                                    <a href="/edit-user/<%= n.id %>">
-                                                        <i class="fa-solid fa-pen text-primary"></i>
-                                                    </a>
-
-                                                    <a href="/delete-user/<%= n.id %>" 
-                                                       onclick="return confirm('Are you sure?')">
-                                                        <i class="fa-solid fa-trash text-danger ms-2"></i>
-                                                    </a>
+                                                    <%= user.created_at ? new Date(user.created_at).toLocaleString() : '-' %>
                                                 </td>
 
                                             </tr>
                                         <% }) %>
                                     <% } else { %>
                                         <tr>
-                                            <td colspan="11" class="text-center">
-                                                No Data Found
-                                            </td>
+                                            <td colspan="6" class="text-center">No Data Found</td>
                                         </tr>
                                     <% } %>
                                 </tbody>
 
-                                <tfoot>
-                                    <tr>
-                                        <th>Sr. No</th>
-                                        <th>Name</th>
-                                        <th>User Name</th>
-                                        <th>Mobile</th>
-                                        <th>DOB</th>
-                                        <th>Email</th>
-                                        <th>Image</th>
-                                        <th>Status</th>
-                                        <th>Created At</th>
-                                        <th>Updated</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </tfoot>
-
                             </table>
 
                             <!-- Pagination -->
-                            <%- include('../utils/pagination') %>
+                            <div class="d-flex justify-content-center">
+
+                                <% for(let i = 1; i <= totalPages; i++) { %>
+                                    <a href="/users_view?page=<%= i %>&search=<%= search %>"
+                                       class="btn btn-sm <%= currentPage === i ? 'btn-primary' : 'btn-light' %> m-1">
+                                        <%= i %>
+                                    </a>
+                                <% } %>
+
+                            </div>
 
                         </div>
 

@@ -1,64 +1,118 @@
-<%- include('../layout/header') %>
-<%- include('../layout/sidebar') %>
+<%- include('../layout/header', { title: 'Users List' }) %>
+<%- include('../layout/sidebar', { currentPage: 'users' }) %>
 
 <div class="content-body">
-<div class="container-fluid">
+    <div class="container-fluid">
 
-<h4>Users List</h4>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Image</th>
-            <th>Created</th>
-        </tr>
-    </thead>
+                        <div class="row align-items-center mb-3">
+                            <div class="col-sm-8">
+                                <h4 class="card-title mb-0">Users List</h4>
+                            </div>
+                            <div class="col-sm-4">
+                                <%- include('../utils/searchbox', { 
+                                    search: search || '', 
+                                    action: '/users/view' 
+                                }) %>
+                            </div>
+                        </div>
 
-    <tbody>
-        <% if (data && data.length > 0) { %>
-            <% data.forEach((u, i) => { %>
-                <tr>
-                    <td><%= ((currentPage - 1) * limit) + i + 1 %></td>
-                    <td><%= u.name %></td>
-                    <td><%= u.mobile %></td>
-                    <td><%= u.email %></td>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Mobile</th>
+                                        <th>Email</th>
+                                        <th>Image</th>
+                                        <th>Created At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
 
-                    <td>
-                        <img src="<%= u.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
-                             width="40">
-                    </td>
+                                <tbody>
+                                    <% if (users && users.length > 0) { %>
+                                        <% users.forEach((u, index) => { %>
+                                            <tr>
+                                                <td><%= ((currentPage - 1) * limit) + index + 1 %></td>
 
-                    <td>
-                        <%= u.created_at ? new Date(u.created_at).toLocaleDateString() : '-' %>
-                    </td>
-                </tr>
-            <% }) %>
-        <% } else { %>
-            <tr>
-                <td colspan="6" class="text-center">No Data Found</td>
-            </tr>
-        <% } %>
-    </tbody>
-</table>
+                                                <td><%= u.name %></td>
+                                                <td><%= u.mobile || '-' %></td>
+                                                <td><%= u.email %></td>
 
-<!-- Pagination -->
-<div>
-    <% if (currentPage > 1) { %>
-        <a href="?page=<%= currentPage - 1 %>&search=<%= search %>">Prev</a>
-    <% } %>
+                                                <td>
+                                                    <img src="<%= u.image || 'https://placehold.co/50x50?text=No+Image' %>"
+                                                         height="50" width="50"
+                                                         style="border-radius:50%; object-fit:cover;">
+                                                </td>
 
-    <span> Page <%= currentPage %> / <%= totalPages %> </span>
+                                                <td>
+                                                    <%= u.created_at ? new Date(u.created_at).toLocaleString() : '-' %>
+                                                </td>
 
-    <% if (currentPage < totalPages) { %>
-        <a href="?page=<%= currentPage + 1 %>&search=<%= search %>">Next</a>
-    <% } %>
-</div>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                                        onclick="editUser(<%= u.id %>)">
+                                                        <i class="fas fa-pen"></i>
+                                                    </button>
 
-</div>
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        onclick="deleteUser(<%= u.id %>)">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">No users found</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+
+                            <%- include('../utils/pagination', { 
+                                currentPage: currentPage, 
+                                totalPages: totalPages, 
+                                search: search, 
+                                baseUrl: '/users/view' 
+                            }) %>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <%- include('../layout/footer') %>
+
+<script>
+function editUser(id) {
+    window.location.href = `/users/edit/${id}`;
+}
+
+async function deleteUser(id) {
+    if (!confirm('Delete this user?')) return;
+
+    try {
+        const res = await fetch(`/users/delete/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Delete failed');
+        }
+    } catch (err) {
+        alert(err.message);
+    }
+}
+</script>

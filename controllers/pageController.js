@@ -19,8 +19,6 @@ exports.getProductAttributes = async (req, res) => {
         if (!db || typeof db.query !== 'function') {
             throw new Error('Database connection not available');
         }
-
-        // Fetch all products with non‑null productattribute
         const [rows] = await db.query(`
             SELECT id, sub_category_id, category_id, vendor_name, vendor_id, 
                    image, created_at, updated_at, nutrientdesc, foodtype, 
@@ -28,7 +26,6 @@ exports.getProductAttributes = async (req, res) => {
             FROM products 
             WHERE productattribute IS NOT NULL AND productattribute != ''
         `);
-
         // Parse JSON for each product
         const productsWithAttributes = rows.map(product => {
             let attributes = [];
@@ -41,12 +38,11 @@ exports.getProductAttributes = async (req, res) => {
                     attributes = [parsed];
                 }
             } catch (e) {
-                // Invalid JSON – keep empty array
+               
                 console.warn(`Invalid productattribute for product ${product.id}:`, e.message);
             }
             return { ...product, attributes };
         });
-
         res.render('products', {
             title: 'Product Attributes',
             showNavigation: true,
@@ -55,7 +51,6 @@ exports.getProductAttributes = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in getProductAttributes:', error);
-        // Generic error message – do not leak internal details
         res.status(500).send(`Unable to load product attributes. Please try again later. '${error}'`);
     }
 };
@@ -172,7 +167,62 @@ exports.showListPage = (req, res) => {
 };
 
 
+const all_users_list = async (search, limit, offset) => {
+    const sql = `
+        SELECT id, name, image, mobile, email, created_at
+        FROM users
+        WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
+        ORDER BY id DESC
+        LIMIT ? OFFSET ?
+    `;
 
+    const [rows] = await db.query(sql, [
+        `%${search}%`,
+        `%${search}%`,
+        `%${search}%`,
+        limit,
+        offset
+    ]);
+
+    return rows;
+};
+
+exports.users_view = async (req, res) => {
+    try {
+        const search = req.query.search || "";
+        let page = parseInt(req.query.page) || 1;
+        if (isNaN(page) || page < 1) page = 1;
+
+        const limit = 10;
+        const offset = (page - 1) * limit;
+
+        // ✅ Get users list from function
+        const users = await all_users_list(search, limit, offset);
+
+        // ✅ Count
+        const [[countResult]] = await db.query(
+            `SELECT COUNT(*) as total FROM users 
+             WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
+            [`%${search}%`, `%${search}%`, `%${search}%`]
+        );
+
+        const totalRecords = countResult.total;
+        const totalPages = Math.ceil(totalRecords / limit);
+
+        res.render('users', {
+            users,
+            currentPage: page,
+            totalPages,
+            search,
+            limit,
+            pageName: 'Users'
+        });
+
+    } catch (error) {
+        console.error("Error in users_view:", error);
+        res.status(500).send(error.message);
+    }
+};
 
 const all_category_list = async (search, limit, offset) => {
     const sql = `

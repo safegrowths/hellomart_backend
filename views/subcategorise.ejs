@@ -1,23 +1,28 @@
-<%- include('layout/sidebar', { currentPage: 'subcategories-list' }) %>
 <%- include('layout/header', { title: 'Subcategories List', showNavigation: true }) %>
-
+<%- include('layout/sidebar', { currentPage: 'subcategories-list' }) %>
 
 <div class="main-content">
   <div class="container-fluid">
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3>Subcategories Management</h3>
+      <h3 class="fw-bold">Subcategories Management</h3>
 
-      <form method="GET" action="/subcategories" class="d-flex">
-        <input type="text" name="search" value="<%= search %>" 
-          class="form-control me-2" placeholder="Search...">
-        <button class="btn btn-primary">Search</button>
-      </form>
+      <div class="d-flex gap-2">
+        <form method="GET" action="/subcategories" class="d-flex">
+          <input type="text" name="search" value="<%= search %>" 
+            class="form-control me-2" placeholder="Search...">
+          <button class="btn btn-primary">Search</button>
+        </form>
+
+        <button class="btn btn-success" onclick="openModal()">
+          + Add
+        </button>
+      </div>
     </div>
 
     <!-- TABS -->
-    <div class="mb-3">
+    <div class="mb-3 d-flex gap-2">
       <a href="/subcategories?status=all" 
         class="btn <%= status=='all'?'btn-primary':'btn-outline-primary' %>">All</a>
 
@@ -29,40 +34,42 @@
     </div>
 
     <!-- TABLE -->
-    <div class="card shadow">
-      <div class="card-body">
-        <div class="table-responsive">
+    <div class="card shadow-sm">
+      <div class="card-body p-3">
 
-          <table class="table table-bordered table-hover">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+
             <thead class="table-light">
               <tr>
-                <th>ID</th>
+                <th>#</th>
                 <th>Category</th>
                 <th>Name</th>
                 <th>Status</th>
                 <th>Date</th>
-                <th width="200">Actions</th>
+                <th class="text-center">Actions</th>
               </tr>
             </thead>
 
             <tbody>
               <% if (subcategories.length === 0) { %>
                 <tr>
-                  <td colspan="6" class="text-center">No Data Found</td>
+                  <td colspan="6" class="text-center text-muted">No Data Found</td>
                 </tr>
               <% } %>
 
-              <% subcategories.forEach(sub => { %>
+              <% subcategories.forEach((sub, index) => { %>
                 <tr>
-                  <td><%= sub.id %></td>
+
+                  <td><%= ((currentPage - 1) * 10) + index + 1 %></td>
 
                   <td>
-                    <span class="badge bg-info">
+                    <span class="badge bg-info text-dark">
                       <%= sub.category_name || 'N/A' %>
                     </span>
                   </td>
 
-                  <td><strong><%= sub.title %></strong></td>
+                  <td class="fw-semibold"><%= sub.title %></td>
 
                   <td>
                     <% if (sub.status == 1) { %>
@@ -76,8 +83,8 @@
                     <%= new Date(sub.created_at).toLocaleDateString() %>
                   </td>
 
-                  <td>
-                    <button class="btn btn-sm btn-info"
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary me-1"
                       onclick="editData(
                         <%= sub.id %>,
                         '<%= sub.title %>',
@@ -89,28 +96,28 @@
                     </button>
 
                     <a href="/subcategories_status/<%= sub.id %>" 
-                       class="btn btn-sm btn-warning">
+                       class="btn btn-sm btn-outline-warning me-1">
                        Toggle
                     </a>
 
                     <a href="/subcategories_delete/<%= sub.id %>" 
                        onclick="return confirm('Delete?')" 
-                       class="btn btn-sm btn-danger">
+                       class="btn btn-sm btn-outline-danger">
                        Delete
                     </a>
                   </td>
+
                 </tr>
               <% }) %>
             </tbody>
           </table>
-
         </div>
 
         <!-- PAGINATION -->
-        <div class="d-flex justify-content-center mt-3">
+        <div class="d-flex justify-content-center mt-3 flex-wrap">
           <% for(let i = 1; i <= totalPages; i++) { %>
             <a href="/subcategories?page=<%= i %>&search=<%= search %>&status=<%= status %>"
-              class="btn <%= i==currentPage ? 'btn-primary':'btn-outline-primary' %> mx-1">
+              class="btn btn-sm <%= i==currentPage ? 'btn-primary':'btn-outline-primary' %> m-1">
               <%= i %>
             </a>
           <% } %>
@@ -123,13 +130,13 @@
 </div>
 
 <!-- MODAL -->
-<div class="modal fade" id="myModal">
+<div class="modal fade" id="myModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5>Add / Edit Subcategory</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
+        <h5 class="modal-title">Add / Edit Subcategory</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
@@ -157,18 +164,12 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-primary" onclick="save()">Save</button>
+        <button class="btn btn-primary w-100" onclick="save()">Save</button>
       </div>
 
     </div>
   </div>
 </div>
-
-<button class="btn btn-primary"
-  style="position:fixed;bottom:20px;right:20px"
-  onclick="openModal()">
-  + Add
-</button>
 
 <style>
 .main-content {
@@ -179,40 +180,40 @@
 }
 </style>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 <script>
 function openModal(){
-  $('#form')[0].reset();
-  $('#id').val('');
-  $('#myModal').modal('show');
+  document.getElementById('form').reset();
+  document.getElementById('id').value = '';
+  new bootstrap.Modal(document.getElementById('myModal')).show();
 }
 
 function editData(id,title,cat,status,desc){
-  $('#id').val(id);
-  $('#title').val(title);
-  $('#category').val(cat);
-  $('#status').val(status);
-  $('#description').val(desc);
-  $('#myModal').modal('show');
+  document.getElementById('id').value = id;
+  document.getElementById('title').value = title;
+  document.getElementById('category').value = cat;
+  document.getElementById('status').value = status;
+  document.getElementById('description').value = desc;
+  new bootstrap.Modal(document.getElementById('myModal')).show();
 }
 
 function save(){
-  const id = $('#id').val();
+  const id = document.getElementById('id').value;
 
   const data = {
-    id: id,
-    title: $('#title').val(),
-    categorise_id: $('#category').val(),
-    status: $('#status').val(),
-    description: $('#description').val()
+    id,
+    title: document.getElementById('title').value,
+    categorise_id: document.getElementById('category').value,
+    status: document.getElementById('status').value,
+    description: document.getElementById('description').value
   };
 
   const url = id ? '/subcategories_update' : '/subcategories_add';
 
-  $.post(url, data, function(){
-    location.reload();
-  });
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  }).then(() => location.reload());
 }
 </script>
 

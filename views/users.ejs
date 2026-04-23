@@ -2,115 +2,142 @@
 <%- include('../layout/sidebar') %>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <div class="content-body">
-<div class="container-fluid">
+    <div class="container-fluid">
 
-<div class="card">
-<div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
 
-<div class="d-flex justify-content-between mb-3">
-    <h4>Users List</h4>
-    <%- include('../utils/searchbox') %>
+                        <!-- Header -->
+                        <div class="row mb-3">
+                            <div class="col-sm-8">
+                                <h4 class="card-title">Users List</h4>
+                            </div>
+                            <div class="col-sm-4">
+                                <%- include('../utils/searchbox') %>
+                            </div>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+
+                                <thead>
+                                    <tr>
+                                        <th>Sr. No</th>
+                                        <th>Name</th>
+                                        <th>User Name</th>
+                                        <th>Mobile</th>
+                                        <th>DOB</th>
+                                        <th>Email</th>
+                                        <th>Image</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Updated</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <% if (data && data.length > 0) { %>
+                                        <% data.forEach(function(n, index) { %>
+                                            <tr>
+
+                                                <!-- Serial -->
+                                                <td>
+                                                    <%= ((currentPage - 1) * limit) + index + 1 %>
+                                                </td>
+
+                                                <!-- Name -->
+                                                <td><%= n.name %></td>
+
+                                                <!-- Username (fallback) -->
+                                                <td><%= n.name %></td>
+
+                                                <!-- Mobile -->
+                                                <td><%= n.mobile || '-' %></td>
+
+                                                <!-- DOB (not in DB) -->
+                                                <td>-</td>
+
+                                                <!-- Email -->
+                                                <td><%= n.email %></td>
+
+                                                <!-- Image -->
+                                                <td>
+                                                    <img src="<%= n.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
+                                                        height="50" width="50"
+                                                        style="border-radius:50px;border:2px solid #000;">
+                                                </td>
+
+                                                <!-- Status (not in DB) -->
+                                                <td>
+                                                    <span class="text-secondary">N/A</span>
+                                                </td>
+
+                                                <!-- Created -->
+                                                <td>
+                                                    <%= n.created_at ? new Date(n.created_at).toLocaleString() : '-' %>
+                                                </td>
+
+                                                <!-- Updated (not in DB) -->
+                                                <td>-</td>
+
+                                                <!-- Action -->
+                                                <td>
+                                                    <a href="/edit-user/<%= n.id %>">
+                                                        <i class="fa-solid fa-pen text-primary"></i>
+                                                    </a>
+
+                                                    <a href="/delete-user/<%= n.id %>" 
+                                                       onclick="return confirm('Are you sure?')">
+                                                        <i class="fa-solid fa-trash text-danger ms-2"></i>
+                                                    </a>
+                                                </td>
+
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="11" class="text-center">
+                                                No Data Found
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <th>Sr. No</th>
+                                        <th>Name</th>
+                                        <th>User Name</th>
+                                        <th>Mobile</th>
+                                        <th>DOB</th>
+                                        <th>Email</th>
+                                        <th>Image</th>
+                                        <th>Status</th>
+                                        <th>Created At</th>
+                                        <th>Updated</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </tfoot>
+
+                            </table>
+
+                            <!-- Pagination -->
+                            <%- include('../utils/pagination') %>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
-
-<div class="table-responsive">
-<table class="table table-bordered">
-
-<thead>
-<tr>
-<th>#</th>
-<th>Name</th>
-<th>Email</th>
-<th>Mobile</th>
-<th>DOB</th>
-<th>Image</th>
-<th>Status</th>
-<th>Orders</th>
-<th>Spent</th>
-<th>Created</th>
-<th>Action</th>
-</tr>
-</thead>
-
-<tbody>
-<% if (data && data.length > 0) { %>
-    <% data.forEach((user, index) => { %>
-    <tr>
-        <td><%= ((currentPage - 1) * limit) + index + 1 %></td>
-
-        <td><%= user.name %></td>
-        <td><%= user.email %></td>
-        <td><%= user.mobile || '-' %></td>
-        <td><%= user.dob || '-' %></td>
-
-        <td>
-            <img src="<%= user.image || 'https://upload.wikimedia.org/wikipedia/commons/a/a3/Image-not-found.png' %>"
-                 width="50" height="50" style="border-radius:50%">
-        </td>
-
-        <td>
-            <% if (user.status == 1) { %>
-                <span class="badge bg-success">Active</span>
-            <% } else { %>
-                <span class="badge bg-secondary">Inactive</span>
-            <% } %>
-        </td>
-
-        <td><%= user.totalOrders %></td>
-        <td>₹<%= (user.totalSpent || 0).toLocaleString() %></td>
-
-        <td><%= new Date(user.created_at).toLocaleDateString() %></td>
-
-        <td>
-            <button onclick="showOrders(<%= user.id %>)" class="btn btn-sm btn-info">Orders</button>
-        </td>
-    </tr>
-    <% }) %>
-<% } else { %>
-<tr><td colspan="11" class="text-center">No Data Found</td></tr>
-<% } %>
-</tbody>
-
-</table>
-
-<%- include('../utils/pagination') %>
-
-</div>
-</div>
-</div>
-
-<!-- Chart -->
-<div class="card mt-3">
-<div class="card-body">
-<canvas id="chart"></canvas>
-</div>
-</div>
-
-</div>
-</div>
-
-<script>
-const chartData = <%- JSON.stringify(chartOrders || []) %>;
-
-if (chartData.length) {
-    new Chart(document.getElementById('chart'), {
-        type: 'line',
-        data: {
-            labels: chartData.map((_, i) => 'Order ' + (i + 1)),
-            datasets: [{
-                label: '₹ Orders',
-                data: chartData
-            }]
-        }
-    });
-}
-
-// Orders alert demo (simple)
-function showOrders(id){
-    alert("Load orders for user: " + id);
-}
-</script>
 
 <%- include('../layout/footer') %>

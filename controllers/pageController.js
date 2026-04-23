@@ -170,20 +170,20 @@ exports.usersview = async (req, res) => {
         const limit = 10;
         const offset = (page - 1) * limit;
 
-        // 🔹 Total count
-        const [countRows] = await db.query(
+        // ✅ Total count
+        const [[countResult]] = await db.query(
             `SELECT COUNT(*) as total FROM users 
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?`,
             [`%${search}%`, `%${search}%`, `%${search}%`]
         );
 
-        const totalRecords = countRows[0].total;
+        const totalRecords = countResult.total;
         const totalPages = Math.ceil(totalRecords / limit);
 
-        // 🔹 Users list
+        // ✅ Simple users list (ONLY users table)
         const [users] = await db.query(
-            `SELECT id, name, email, mobile, image, created_at, status,
-                    username, dob
+            `SELECT id, name, image, created_at, mobile, amount, email, 
+                    business_name, upload_shop_logo, shop_doc, token
              FROM users
              WHERE name LIKE ? OR email LIKE ? OR mobile LIKE ?
              ORDER BY id DESC
@@ -191,75 +191,18 @@ exports.usersview = async (req, res) => {
             [`%${search}%`, `%${search}%`, `%${search}%`, limit, offset]
         );
 
-        // 🔹 Get order summary (optimized)
-        const userIds = users.map(u => u.id);
-        let orderMap = {};
-        let ordersByUser = {};
-        let chartOrders = [];
-
-        if (userIds.length > 0) {
-            const [orderSummary] = await db.query(
-                `SELECT user_id,
-                        COUNT(*) AS order_count,
-                        COALESCE(SUM(grand_total), 0) AS total_spent
-                 FROM orders
-                 WHERE user_id IN (?)
-                 GROUP BY user_id`,
-                [userIds]
-            );
-
-            orderSummary.forEach(row => {
-                orderMap[row.user_id] = {
-                    count: row.order_count,
-                    total: row.total_spent
-                };
-            });
-
-            // 🔹 Orders list for modal
-            const [orders] = await db.query(
-                `SELECT user_id, grand_total, created_at
-                 FROM orders
-                 WHERE user_id IN (?)
-                 ORDER BY created_at DESC`,
-                [userIds]
-            );
-
-            orders.forEach(order => {
-                if (!ordersByUser[order.user_id]) {
-                    ordersByUser[order.user_id] = [];
-                }
-                ordersByUser[order.user_id].push({
-                    amount: order.grand_total,
-                    date: order.created_at
-                });
-            });
-
-            // 🔹 Chart (last 7 orders)
-            chartOrders = orders.slice(0, 7).map(o => o.grand_total).reverse();
-        }
-
-        // 🔹 Merge data
-        const usersWithOrders = users.map(user => ({
-            ...user,
-            totalOrders: orderMap[user.id]?.count || 0,
-            totalSpent: orderMap[user.id]?.total || 0,
-            ordersList: ordersByUser[user.id] || []
-        }));
-
-        // 🔹 Render
         res.render('users', {
-            pageName: 'Users',
-            data: usersWithOrders,
+            data: users,
             currentPage: page,
             totalPages,
             limit,
             search,
-            chartOrders
+            pageName: 'Users'
         });
 
     } catch (error) {
         console.error("Error in usersview:", error);
-        res.status(500).send(`Server Error ${error}`);
+        res.status(500).send("Server Error");
     }
 };
 // Show List Categories page (HTML)

@@ -87,12 +87,12 @@
                       Edit
                     </button>
 
-                    <a href="/subcategories/status/<%= sub.id %>" 
+                    <a href="/subcategories_status/<%= sub.id %>" 
                        class="btn btn-sm btn-warning">
                        Toggle
                     </a>
 
-                    <a href="/subcategories/delete/<%= sub.id %>" 
+                    <a href="/subcategories_delete/<%= sub.id %>" 
                        onclick="return confirm('Delete?')" 
                        class="btn btn-sm btn-danger">
                        Delete
@@ -207,7 +207,7 @@ function save(){
     description: $('#description').val()
   };
 
-  const url = id ? '/subcategories/update' : '/subcategories/add';
+  const url = id ? '/subcategories_update' : '/subcategories_add';
 
   $.post(url, data, function(){
     location.reload();
